@@ -15,7 +15,9 @@
  **/
 package org.venice.piazza.piazza;
 
+import java.lang.reflect.Method;
 import java.security.Principal;
+import java.util.concurrent.Executor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,12 +32,17 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -47,13 +54,17 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.scheduling.annotation.AsyncConfigurer;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -61,6 +72,8 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import org.venice.piazza.gateway.auth.ExtendedRequestDetails;
 import org.venice.piazza.gateway.auth.PiazzaBasicAuthenticationEntryPoint;
 import org.venice.piazza.gateway.auth.PiazzaBasicAuthenticationProvider;
+import org.venice.piazza.jobmanager.database.DatabaseAccessor;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import io.swagger.annotations.Api;
 import messaging.job.JobMessageFactory;
@@ -84,18 +97,36 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  */
 @SpringBootApplication
 @EnableSwagger2
+@Configuration
+@EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class })
+@EnableAsync
+@EnableScheduling
+@EnableTransactionManagement
+@EnableRabbit
+@EnableJpaRepositories(basePackages = { 
+		"org.venice.piazza.common.hibernate", 
+})
+@EntityScan(basePackages = { 
+		"org.venice.piazza.common.hibernate",
+})
 @ComponentScan(basePackages = { 
 		"org.venice.piazza.piazza",
 		"org.venice.piazza.gateway",
+		"org.venice.piazza.jobmanager",
 })
-@EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class })
-public class Application extends SpringBootServletInitializer {
+public class Application extends SpringBootServletInitializer implements AsyncConfigurer {
 	@Value("${http.max.total}")
 	private int httpMaxTotal;
 	@Value("${http.max.route}")
 	private int httpMaxRoute;
+	@Value("${thread.count.size}")
+	private int threadCountSize;
+	@Value("${thread.count.limit}")
+	private int threadCountLimit;
 	@Value("${SPACE}")
 	private String SPACE;
+
+	private static final Logger LOG = LoggerFactory.getLogger(DatabaseAccessor.class);
 
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
@@ -152,6 +183,23 @@ public class Application extends SpringBootServletInitializer {
 	private ApiInfo apiInfo() {
 		return new ApiInfoBuilder().title("Gateway API").description("Piazza Core Services API")
 				.contact(new Contact("The VeniceGeo Project", "http://radiantblue.com", "venice@radiantblue.com")).version("0.1.0").build();
+	}
+	
+	@Override
+	@Bean
+	public Executor getAsyncExecutor() {
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		// Thread pool capped to work optimally at 512MB ram (per the PCF app)
+		executor.setCorePoolSize(threadCountSize);
+		executor.setMaxPoolSize(threadCountLimit);
+		executor.initialize();
+		return executor;
+	}
+
+	@Override
+	public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+		return (Throwable ex, Method method, Object... params) -> LOG
+				.error("Uncaught Threading exception encountered in {} with details: {}", ex.getMessage(), method.getName());
 	}
 
 	@Configuration
