@@ -1,9 +1,9 @@
 - name: piazza
   host: piazza
   path: piazza
-  buildpack: 'https://github.com/cloudfoundry/java-buildpack.git#v3.9'
-  memory: 2048M
-  instances: 1
+  buildpack: java_buildpack
+  memory: 4096M
+  instances: 1 # TODO: switch to 2 on full deployment
   timeout: 80
   services:
     - pz-rabbitmq
