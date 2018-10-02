@@ -1,0 +1,13 @@
+- name: piazza
+  host: piazza
+  path: piazza
+  buildpack: java_buildpack
+  memory: 4096M
+  instances: 1 # TODO: switch to 2 on full deployment
+  timeout: 80
+  services:
+    - pz-rabbitmq
+    - pz-blobstore
+    - pz-postgres
+  env:
+    SPRING_PROFILES_ACTIVE: cloud,secure

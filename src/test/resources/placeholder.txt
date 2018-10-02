@@ -1,0 +1,2 @@
+This file exists so Git can track the `src/test/resources` dir. 
+Remove it once this dir contains some real test resources.
