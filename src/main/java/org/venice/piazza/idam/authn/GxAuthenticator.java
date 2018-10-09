@@ -1,0 +1,227 @@
+/**
+ * Copyright 2016, RadiantBlue Technologies, Inc.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **/
+package org.venice.piazza.idam.authn;
+
+import java.util.List;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+import org.venice.piazza.idam.data.DatabaseAccessor;
+import org.venice.piazza.idam.model.GxAuthNCertificateRequest;
+import org.venice.piazza.idam.model.GxAuthNResponse;
+import org.venice.piazza.idam.model.GxAuthNUserPassRequest;
+import org.venice.piazza.idam.model.PrincipalItem;
+import org.venice.piazza.idam.util.GxUserProfileClient;
+
+import model.logger.AuditElement;
+import model.logger.Severity;
+import model.response.AuthResponse;
+import model.security.authz.UserProfile;
+import util.PiazzaLogger;
+
+/**
+ * AuthN requests to GeoAxis to verify user identity via user name/password or PKI cert.
+ * 
+ * @author Russel.Orf
+ *
+ */
+@Component
+@Profile({ "geoaxis" })
+public class GxAuthenticator implements PiazzaAuthenticator {
+
+	@Value("${vcap.services.geoaxis.credentials.api.url.atncert}")
+	private String gxApiUrlAtnCert;
+	@Value("${vcap.services.geoaxis.credentials.api.url.atnbasic}")
+	private String gxApiUrlAtnBasic;
+	@Value("${vcap.services.geoaxis.credentials.api.url.ata}")
+	private String gxApiUrlAta;	
+	@Value("${vcap.services.geoaxis.credentials.basic.mechanism}")
+	private String gxBasicMechanism;
+	@Value("${vcap.services.geoaxis.credentials.basic.hostidentifier}")
+	private String gxBasicHostIdentifier;
+	@Value("${npe.users.only}")
+	private Boolean npeUsersOnly;
+	@Autowired
+	private PiazzaLogger logger;
+	@Autowired
+	private GxUserProfileClient gxUserProfileClient;
+	@Autowired
+	private RestTemplate restTemplate;
+	@Autowired
+	private DatabaseAccessor accessor;
+	
+	private static final String USER_FAILED_AUTH = "userFailedAuthentication";
+
+	@Override
+	public AuthResponse getAuthenticationDecision(final String username, final String credential) {
+		logger.log(String.format("Performing credential check for Username %s to GeoAxis.", username), Severity.INFORMATIONAL,
+				new AuditElement(username, "loginAttempt", ""));
+		final GxAuthNUserPassRequest request = new GxAuthNUserPassRequest();
+		request.setUsername(username);
+		request.setPassword(credential);
+		request.setMechanism(gxBasicMechanism);
+		request.setHostIdentifier(gxBasicHostIdentifier);
+
+		final GxAuthNResponse gxResponse = restTemplate.postForObject(gxApiUrlAtnBasic, request, GxAuthNResponse.class);
+
+		return processGxResponse(gxResponse);
+	}
+
+	@Override
+	public AuthResponse getAuthenticationDecision(final String pem) {
+		logger.log("Performing cert check for PKI Cert to GeoAxis", Severity.INFORMATIONAL,
+				new AuditElement("idam", "loginCertAttempt", ""));
+		
+		final GxAuthNCertificateRequest request = new GxAuthNCertificateRequest();
+		request.setPemCert(getFormattedPem(pem));
+		request.setMechanism("GxCert");
+		request.setHostIdentifier("//OAMServlet/certprotected");
+
+		final GxAuthNResponse gxResponse = restTemplate.postForObject(gxApiUrlAtnCert, request, GxAuthNResponse.class);
+
+		return processGxResponse(gxResponse);
+	}
+	
+	private AuthResponse processGxResponse(final GxAuthNResponse gxResponse) {
+		boolean isAuthSuccess = false;
+		UserProfile userProfile = null;
+		
+		if( gxResponse != null ) {
+			logger.log(String.format("GeoAxis response has returned authentication %s", gxResponse.isSuccessful()),
+					Severity.INFORMATIONAL,
+					new AuditElement("idam", gxResponse.isSuccessful() ? "userLoggedIn" : USER_FAILED_AUTH, ""));
+
+			// If Authentication was successful, then get/create the User Profile.
+			if( gxResponse.isSuccessful() ) {
+				userProfile = processSuccessfulResponse(gxResponse);
+				
+				if( userProfile != null ) {
+					isAuthSuccess = true;
+				}
+			}
+		}
+		else {
+			logger.log("GeoAxis has returned a NULL response!", Severity.INFORMATIONAL,
+					new AuditElement("idam", USER_FAILED_AUTH, ""));
+		}
+		
+		return new AuthResponse(isAuthSuccess, userProfile);
+	}
+
+	private UserProfile processSuccessfulResponse(final GxAuthNResponse gxResponse) {
+		UserProfile userProfile = null;
+
+		// Extract the Username and DN from the Response
+		String username = null;
+		String dn = null;
+		if (gxResponse.getPrincipals() != null && gxResponse.getPrincipals().getPrincipal() != null) {
+			List<PrincipalItem> listItems = gxResponse.getPrincipals().getPrincipal();
+			for (PrincipalItem item : listItems) {
+				if (username == null) {
+					username = checkKey("UID", item);
+				}
+				if (dn == null) {
+					dn = checkKey("DN", item);
+				}
+			}
+		}
+		
+		if( username != null && dn != null ) {
+			if( (npeUsersOnly && dn.toLowerCase().contains("ou=component")) || !npeUsersOnly) {
+				userProfile = getUserProfile(username, dn, true);
+			}
+			else {
+				logger.log("User is not an NPE! Failing Authentication", Severity.INFORMATIONAL,
+						new AuditElement("idam", USER_FAILED_AUTH, ""));
+			}
+		}
+		else {
+			logger.log("GeoAxis has returned a NULL Username or DN!", Severity.INFORMATIONAL,
+					new AuditElement("idam", USER_FAILED_AUTH, ""));
+		}
+		
+		return userProfile;
+	}
+	
+	private String checkKey(final String keyName, final PrincipalItem item) {
+		String value = null;
+
+		if (keyName.equalsIgnoreCase(item.getName())) {
+			value = item.getValue();
+		}
+
+		return value;
+	}
+
+	/**
+	 * Creates a User Profile in the DB, if one does not already exist. 
+	 * If it exists, then it will update the profile with the most recent attributes.
+	 * 
+	 * 
+	 * @param gxResponse
+	 *            The GeoAxis response, containing at a minimum the username and DN
+	 * @return The UserProfile object for this User
+	 */
+	private UserProfile getUserProfile(final String username, final String dn, final boolean isNPE) {
+
+		if ((username != null) && (dn != null)) {
+			
+			logger.log(String.format("GeoAxis response contains: Username %s with DN %s", username, dn),
+					Severity.INFORMATIONAL);
+
+			// Get the latest information from Gx
+			final UserProfile userProfile = gxUserProfileClient.getUserProfileFromGx(username, dn);
+			
+			if (accessor.hasUserProfile(username, dn)) {
+				final UserProfile originalUserProfile = accessor.getUserProfileByUsername(username);
+				if( originalUserProfile != null ) {
+					userProfile.setCreatedOn(originalUserProfile.getCreatedOn());
+					userProfile.setNPE(isNPE);
+				}
+				
+				userProfile.setLastUpdatedOn(new DateTime());
+				
+				accessor.updateUserProfile(username, dn, userProfile);
+			} 
+			else {
+				userProfile.setCreatedOn(new DateTime());
+				userProfile.setNPE(isNPE);
+
+				accessor.insertUserProfile(userProfile);
+			}
+
+			// Return the Profile
+			return userProfile;
+		} else {
+			// Log
+			logger.log(String.format("GeoAxis Response was successful, but failed to get User Profile information for name %s and DN %s.",
+					username, dn), Severity.ERROR);
+			// Parse errors? Payload not present? This is an error. Don't attempt any further creation.
+			return null;
+		}
+	}
+	
+	private String getFormattedPem(final String pem) {
+		String pemHeader = "-----BEGIN CERTIFICATE-----";
+		String pemFooter = "-----END CERTIFICATE-----";
+		String pemInternal = pem.substring(pemHeader.length(), pem.length() - pemFooter.length() - 1);
+
+		return pemHeader + "\n" + pemInternal.trim().replaceAll(" +", "\n") + "\n" + pemFooter;
+	}
+}
