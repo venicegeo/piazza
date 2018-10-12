@@ -1,0 +1,143 @@
+/**
+ * Copyright 2016, RadiantBlue Technologies, Inc.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **/
+package org.venice.piazza.ingest.test;
+
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+
+import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.client.RestTemplate;
+
+import exception.InvalidInputException;
+import org.venice.piazza.ingest.controller.IngestController;
+import org.venice.piazza.ingest.messaging.IngestThreadManager;
+import org.venice.piazza.ingest.persist.DatabaseAccessor;
+import org.venice.piazza.ingest.utility.IngestUtilities;
+import model.data.DataResource;
+import model.job.metadata.ResourceMetadata;
+import model.response.ErrorResponse;
+import model.response.PiazzaResponse;
+import model.response.SuccessResponse;
+import util.PiazzaLogger;
+
+/**
+ * Tests the Ingest Rest Controller
+ * 
+ * @author Patrick.Doody
+ *
+ */
+public class ControllerTests {
+	@Mock
+	private IngestThreadManager threadManager;
+	@Mock
+	private PiazzaLogger logger;
+	@Mock
+	private DatabaseAccessor accessor;
+	@Mock
+	private IngestUtilities ingestUtil;
+	@Mock
+	private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+	@Mock
+	private RestTemplate restTemplate;
+
+	@InjectMocks
+	private IngestController ingestController;
+
+	/**
+	 * Initialized
+	 */
+	@Before
+	public void setup() {
+		MockitoAnnotations.initMocks(this);
+	}
+
+	/**
+	 * Test DELETE /data/{dataId}
+	 */
+	@Test
+	public void testDelete() {
+		// Test empty Data
+		ResponseEntity<PiazzaResponse> response = ingestController.deleteData("");
+		assertTrue(response.getBody() instanceof ErrorResponse);
+		assertTrue(((ErrorResponse) response.getBody()).message.contains("No Data Id"));
+
+		// Test no Data Resource for the Id
+		Mockito.when(accessor.getData(eq("123456"))).thenReturn(null);
+		response = ingestController.deleteData("123456");
+		assertTrue(response.getBody() instanceof ErrorResponse);
+		assertTrue(((ErrorResponse) response.getBody()).message.contains("Data not found"));
+
+		// Successful deletion
+		Mockito.when(accessor.getData(eq("123456"))).thenReturn(new DataResource());
+		// Mockito.doNothing().when(ingestUtil.deleteDataResourceFiles(any(DataResource.class)));
+		// Mockito.doNothing().when(accessor.deleteDataEntry(eq("123456")));
+		response = ingestController.deleteData("123456");
+		assertTrue(response.getStatusCode().compareTo(HttpStatus.OK) == 0);
+	}
+
+	/**
+	 * Test POST /data/{dataId}
+	 */
+	@Test
+	public void testUpdate() throws Exception {
+		// Test
+		Mockito.doNothing().when(accessor).updateMetadata(eq("123456"), any(ResourceMetadata.class));
+		Mockito.when(accessor.getData(eq("123456"))).thenReturn(new DataResource());
+		ResponseEntity<PiazzaResponse> response = ingestController.updateMetadata("123456", new ResourceMetadata());
+		assertTrue(response.getBody() instanceof SuccessResponse);
+
+		// Test Exception
+		Mockito.doThrow(new InvalidInputException("Error")).when(accessor).updateMetadata(eq("123456"), any(ResourceMetadata.class));
+		response = ingestController.updateMetadata("123456", new ResourceMetadata());
+		assertTrue(response.getBody() instanceof ErrorResponse);
+	}
+
+	/**
+	 * Test GET /admin/stats
+	 */
+	@Test
+	public void testAdminStats() {
+		// Test
+		ResponseEntity<Map<String, Object>> entity = ingestController.getAdminStats();
+		Map<String, Object> map = entity.getBody();
+
+		// Verify
+		assertTrue(entity.getStatusCode().equals(HttpStatus.OK));
+		assertTrue(map.keySet().contains("jobs"));
+	}
+
+	/**
+	 * Test GET /
+	 */
+	@Test
+	public void testHealthCheck() {
+		// Test
+		String response = ingestController.getHealthCheck();
+		// Verify
+		assertTrue(response.contains("Health"));
+	}
+}
