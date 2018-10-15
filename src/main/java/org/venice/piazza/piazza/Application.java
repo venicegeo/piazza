@@ -129,6 +129,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 		"org.venice.piazza.piazza",
 		"org.venice.piazza.gateway",
 		"org.venice.piazza.idam",
+		"org.venice.piazza.ingest",
 		"org.venice.piazza.jobmanager",
 		"util",
 })
@@ -218,6 +219,12 @@ public class Application extends SpringBootServletInitializer implements AsyncCo
 	public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
 		return (Throwable ex, Method method, Object... params) -> LOG
 				.error("Uncaught Threading exception encountered in {} with details: {}", ex.getMessage(), method.getName());
+	}
+
+	@Bean
+	public Queue updateJobsQueue() {
+		return new Queue(String.format(JobMessageFactory.TOPIC_TEMPLATE, JobMessageFactory.UPDATE_JOB_TOPIC_NAME, SPACE), true, false,
+				false);
 	}
 
 	@Configuration
