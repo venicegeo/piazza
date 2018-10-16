@@ -149,6 +149,32 @@
 			<artifactId>jackson-dataformat-xml</artifactId>
 			<version>2.8.9</version>
 		</dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-wfs-ng</artifactId>
+			<version>${geotools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-shapefile</artifactId>
+			<version>${geotools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.geotools.jdbc</groupId>
+			<artifactId>gt-jdbc-postgis</artifactId>
+			<version>${geotools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-geotiff</artifactId>
+			<version>${geotools.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
 		<dependency>
 			<groupId>org.geotools</groupId>
@@ -173,13 +199,19 @@
 			<artifactId>gt-epsg-extension</artifactId>
 			<version>${geotools.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>com.vividsolutions</groupId>
+			<artifactId>jts</artifactId>
+			<version>1.13</version>
+		</dependency>
 	</dependencies>
 
 	<properties>
 		<java.version>1.8</java.version>
 		<packaging>jar</packaging>
 		<maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
-		<geotools.version>14.2</geotools.version>
+		<geotools.version>17.1</geotools.version>
 	</properties>
 
 	<build>
