@@ -16,7 +16,6 @@
 package org.venice.piazza.access.test;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -32,12 +31,9 @@ import org.venice.piazza.common.hibernate.dao.LeaseDao;
 import org.venice.piazza.common.hibernate.dao.dataresource.DataResourceDao;
 import org.venice.piazza.common.hibernate.dao.deployment.DeploymentDao;
 import org.venice.piazza.common.hibernate.entity.DataResourceEntity;
-import org.venice.piazza.common.hibernate.entity.DeploymentEntity;
-
 import org.venice.piazza.access.database.DatabaseAccessor;
 import model.data.DataResource;
 import model.data.deployment.Deployment;
-import util.GeoToolsUtil;
 
 /**
  * Tests the Database Accessor CRUD Utility

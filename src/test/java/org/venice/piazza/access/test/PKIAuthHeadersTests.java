@@ -17,7 +17,6 @@ package org.venice.piazza.access.test;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.junit.Before;
@@ -28,11 +27,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpHeaders;
 
 import org.venice.piazza.access.deploy.geoserver.PKIAuthHeaders;
-import org.venice.piazza.access.util.AccessUtilities;
 import exception.InvalidInputException;
-import model.data.DataResource;
-import model.data.location.FolderShare;
-import model.data.type.RasterDataType;
 import util.PiazzaLogger;
 
 /**
