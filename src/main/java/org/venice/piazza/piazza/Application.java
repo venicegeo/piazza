@@ -126,6 +126,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 		"org.venice.piazza.common.hibernate",
 })
 @ComponentScan(basePackages = { 
+		"org.venice.piazza.access",
 		"org.venice.piazza.piazza",
 		"org.venice.piazza.gateway",
 		"org.venice.piazza.idam",
