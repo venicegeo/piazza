@@ -4,8 +4,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.venice.piazza.idam.model.GxAuthAResponse;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Collections;
 
 public class GXAuthAResponseTest {

@@ -1,6 +1,5 @@
 package org.venice.piazza.idam.test.util;
 
-import model.security.authz.UserProfile;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,7 +12,6 @@ import org.venice.piazza.idam.model.GxAuthAResponse;
 import org.venice.piazza.idam.util.GxUserProfileClient;
 import util.PiazzaLogger;
 
-import java.util.ArrayList;
 import java.util.Collections;
 
 public class GxUserProfileClientTest {
