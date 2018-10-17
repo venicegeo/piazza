@@ -79,6 +79,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -132,6 +133,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 		"org.venice.piazza.idam",
 		"org.venice.piazza.ingest",
 		"org.venice.piazza.jobmanager",
+		"org.venice.piazza.servicecontroller",
 		"util",
 })
 public class Application extends SpringBootServletInitializer implements AsyncConfigurer {
@@ -226,6 +228,17 @@ public class Application extends SpringBootServletInitializer implements AsyncCo
 	public Queue updateJobsQueue() {
 		return new Queue(String.format(JobMessageFactory.TOPIC_TEMPLATE, JobMessageFactory.UPDATE_JOB_TOPIC_NAME, SPACE), true, false,
 				false);
+	}
+
+	@Bean(name = "RequestJobQueue")
+	public Queue requestJobQueue() {
+		return new Queue(String.format(JobMessageFactory.TOPIC_TEMPLATE, JobMessageFactory.REQUEST_JOB_TOPIC_NAME, SPACE), true, false,
+				false);
+	}
+
+	@Bean
+	public LocalValidatorFactoryBean getLocalValidatorFactoryBean() {
+		return new LocalValidatorFactoryBean();
 	}
 
 	@Configuration
