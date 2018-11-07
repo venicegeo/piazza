@@ -74,6 +74,10 @@ public class PiazzaEnvironment {
 	private int restTemplateConnectionReadTimeout;
 	@Value("${exit.on.geoserver.provision.failure}")
 	private Boolean exitOnGeoServerProvisionFailure;
+	@Value("${geoserver.workspace.name}")
+	private String workspaceName;
+	@Value("${geoserver.datastore.name}")
+	private String dataStoreName;
 	@Autowired
 	private HttpClient httpClient;
 	@Autowired
@@ -249,6 +253,8 @@ public class PiazzaEnvironment {
 			dataStoreBody = dataStoreBody.replace("$DB_PORT", postgresPort);
 			dataStoreBody = dataStoreBody.replace("$DB_NAME", postgresDatabase);
 			dataStoreBody = dataStoreBody.replace("$DB_HOST", postgresHost);
+			dataStoreBody = dataStoreBody.replace("$GS_STORE_NAME", dataStoreName);
+			dataStoreBody = dataStoreBody.replace("$GS_WORKSPACE_NAME", workspaceName);
 
 			// POST Data Store to GeoServer
 			authHeaders.setContentType(MediaType.APPLICATION_XML);

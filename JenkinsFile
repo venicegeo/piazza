@@ -122,6 +122,8 @@ node {
         try {
           sh "cf set-env ${appName} SPACE ${env.PHASE_ONE_PCF_SPACE}"
           sh "cf set-env ${appName} DOMAIN ${env.PHASE_ONE_PCF_DOMAIN}"
+          sh "cf set-env ${appName} geoserver.workspace.name=piazza ${env.GEOSERVER_WORKSPACE_NAME}"
+          sh "cf set-env ${appName} geoserver.datastore.name=piazza ${env.GEOSERVER_DATASTORE_NAME}"
           sh "cf start ${appName}"
         } catch (Exception e) {
           try {
@@ -220,6 +222,8 @@ node {
           try {
             sh "cf set-env ${appName} SPACE ${env.PHASE_TWO_PCF_SPACE}"
             sh "cf set-env ${appName} DOMAIN ${env.PHASE_TWO_PCF_DOMAIN}"
+            sh "cf set-env ${appName} geoserver.workspace.name=piazza ${env.GEOSERVER_WORKSPACE_NAME}"
+            sh "cf set-env ${appName} geoserver.datastore.name=piazza ${env.GEOSERVER_DATASTORE_NAME}"
             sh "cf start ${appName}"
           } catch (Exception e) {
             try {
