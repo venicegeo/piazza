@@ -20,6 +20,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -72,6 +73,9 @@ public class GroupDeployer {
 	private AuthHeaders authHeaders;
 	@Autowired
 	private AccessUtilities accessUtilities;
+	
+	@Value("${geoserver.workspace.name}")
+	private String workspaceName;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(GroupDeployer.class);
 	private static final String ACCESS = "access";
@@ -231,7 +235,7 @@ public class GroupDeployer {
 		// Create Request
 		authHeaders.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<String> request = new HttpEntity<>(authHeaders.get());
-		String url = String.format("%s/rest/workspaces/piazza/layergroups/%s.json", accessUtilities.getGeoServerBaseUrl(),
+		String url = String.format("%s/rest/workspaces/%s/layergroups/%s.json", accessUtilities.getGeoServerBaseUrl(), workspaceName,
 				deploymentGroup.deploymentGroupId);
 
 		// Execute
@@ -280,7 +284,7 @@ public class GroupDeployer {
 		HttpEntity<String> request = new HttpEntity<>(authHeaders.get());
 		// Note that XML format is used. This is a work-around because JSON currently has a bug with GeoServer that
 		// prevents a correct response from returning when Layer count is above 5.
-		String url = String.format("%s/rest/workspaces/piazza/layergroups/%s.xml", 
+		String url = String.format("%s/rest/workspaces/%s/layergroups/%s.xml", workspaceName, 
 				accessUtilities.getGeoServerBaseUrl(), deploymentGroupId);
 
 		// Execute the request to get the Layer Group
@@ -359,8 +363,8 @@ public class GroupDeployer {
 			throw new DataInspectException(error);
 		}
 		String url = String.format(
-				method.equals(HttpMethod.PUT) ? "%s/rest/workspaces/piazza/layergroups/%s.json"
-						: "%s/rest/workspaces/piazza/layergroups.json", accessUtilities.getGeoServerBaseUrl(), layerGroup.getLayerGroup().getName());
+				method.equals(HttpMethod.PUT) ? "%s/rest/workspaces/%s/layergroups/%s.json"
+						: "%s/rest/workspaces/%s/layergroups.json", accessUtilities.getGeoServerBaseUrl(), workspaceName, layerGroup.getLayerGroup().getName());
 
 		// Send
 		ResponseEntity<String> response = null;
