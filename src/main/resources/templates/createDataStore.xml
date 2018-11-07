@@ -1,10 +1,10 @@
 <dataStore>
-  <name>piazza</name>
+  <name>$GS_STORE_NAME</name>
   <description>piazza</description>
   <type>PostGIS</type>
   <enabled>true</enabled>
   <workspace>
-    <name>piazza</name>
+    <name>$GS_WORKSPACE_NAME</name>
   </workspace>
   <connectionParameters>
     <entry key="user">$DB_USER</entry>

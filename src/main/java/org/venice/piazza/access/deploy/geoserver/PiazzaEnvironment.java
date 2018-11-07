@@ -74,6 +74,10 @@ public class PiazzaEnvironment {
 	private int restTemplateConnectionReadTimeout;
 	@Value("${exit.on.geoserver.provision.failure}")
 	private Boolean exitOnGeoServerProvisionFailure;
+	@Value("${geoserver.workspace.name}")
+	private String workspaceName;
+	@Value("${geoserver.datastore.name}")
+	private String dataStoreName;
 	@Autowired
 	private HttpClient httpClient;
 	@Autowired
@@ -104,7 +108,7 @@ public class PiazzaEnvironment {
 
 		// Check for Workspace
 		try {
-			String workspaceUri = String.format("%s/rest/workspaces/piazza.json", accessUtilities.getGeoServerBaseUrl());
+			String workspaceUri = String.format("%s/rest/workspaces/%s.json", accessUtilities.getGeoServerBaseUrl(), workspaceName);
 			if (!doesResourceExist(workspaceUri)) {
 				createWorkspace();
 			} else {
@@ -118,7 +122,7 @@ public class PiazzaEnvironment {
 
 		// Check for Data Store
 		try {
-			String dataStoreUri = String.format("%s/rest/workspaces/piazza/datastores/piazza.json", accessUtilities.getGeoServerBaseUrl());
+			String dataStoreUri = String.format("%s/rest/workspaces/%s/datastores/%s.json", accessUtilities.getGeoServerBaseUrl(), workspaceName, dataStoreName);
 			if (!doesResourceExist(dataStoreUri)) {
 				createPostgresStore();
 			} else {
@@ -181,7 +185,7 @@ public class PiazzaEnvironment {
 	private void createWorkspace() {
 		// POST the Workspace
 		authHeaders.setContentType(MediaType.APPLICATION_XML);
-		String body = "<workspace><name>piazza</name></workspace>";
+		String body = String.format("<workspace><name>%s</name></workspace>", workspaceName);
 		HttpEntity<String> request = new HttpEntity<>(body, authHeaders.get());
 		String uri = String.format("%s/rest/workspaces", accessUtilities.getGeoServerBaseUrl());
 		try {
@@ -196,7 +200,7 @@ public class PiazzaEnvironment {
 				// a PUT request that does nothing - but internally in GeoServer this fixes some configuration bug where
 				// the
 				// workspace would otherwise not perform properly.
-				String updateWorkspaceUri = String.format("%s/rest/workspaces/piazza.xml", accessUtilities.getGeoServerBaseUrl());
+				String updateWorkspaceUri = String.format("%s/rest/workspaces/%s.xml", accessUtilities.getGeoServerBaseUrl(), workspaceName);
 				restTemplate.exchange(updateWorkspaceUri, HttpMethod.PUT, request, String.class);
 			} catch (HttpClientErrorException | HttpServerErrorException exception) {
 				String error = String.format(
@@ -249,11 +253,13 @@ public class PiazzaEnvironment {
 			dataStoreBody = dataStoreBody.replace("$DB_PORT", postgresPort);
 			dataStoreBody = dataStoreBody.replace("$DB_NAME", postgresDatabase);
 			dataStoreBody = dataStoreBody.replace("$DB_HOST", postgresHost);
+			dataStoreBody = dataStoreBody.replace("$GS_STORE_NAME", dataStoreName);
+			dataStoreBody = dataStoreBody.replace("$GS_WORKSPACE_NAME", workspaceName);
 
 			// POST Data Store to GeoServer
 			authHeaders.setContentType(MediaType.APPLICATION_XML);
 			HttpEntity<String> request = new HttpEntity<>(dataStoreBody, authHeaders.get());
-			String uri = String.format("%s/rest/workspaces/piazza/datastores", accessUtilities.getGeoServerBaseUrl());
+			String uri = String.format("%s/rest/workspaces/%s/datastores", accessUtilities.getGeoServerBaseUrl(), workspaceName);
 			try {
 				pzLogger.log(String.format("Creating Piazza Data Store to %s", uri), Severity.INFORMATIONAL,
 						new AuditElement(ACCESS, "tryCreateGeoServerDataStore", uri));

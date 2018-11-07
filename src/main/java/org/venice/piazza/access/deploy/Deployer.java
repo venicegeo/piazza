@@ -24,6 +24,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -77,9 +78,11 @@ public class Deployer {
 	private RestTemplate restTemplate;
 	@Autowired
 	private AuthHeaders authHeaders;
-
-	private static final String ADD_LAYER_ENDPOINT = "/rest/workspaces/piazza/datastores/piazza/featuretypes/";
-	private static final String CAPABILITIES_URL = "/piazza/wfs?service=wfs&version=2.0.0&request=GetCapabilities";
+	
+	@Value("${geoserver.workspace.name}")
+	private String workspaceName;
+	@Value("${geoserver.datastore.name}")
+	private String dataStoreName;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Deployer.class);
 	private static final String ACCESS = "access";
@@ -190,7 +193,8 @@ public class Deployer {
 				dataResource.getSpatialMetadata().getEpsgString(), "EPSG:4326");
 
 		// Execute the POST to GeoServer to add the FeatureType
-		HttpStatus statusCode = postGeoServerFeatureType(ADD_LAYER_ENDPOINT, requestBody);
+		String addLayerEndpoint = String.format("/rest/workspaces/%s/datastores/%s/featuretypes/", workspaceName, dataStoreName);
+		HttpStatus statusCode = postGeoServerFeatureType(addLayerEndpoint, requestBody);
 
 		// Ensure the Status Code is OK
 		if (statusCode != HttpStatus.CREATED) {
@@ -203,7 +207,7 @@ public class Deployer {
 
 		// Create a new Deployment for this Resource
 		String deploymentId = uuidFactory.getUUID();
-		String capabilitiesUrl = String.format("%s%s", accessUtilities.getGeoServerBaseUrl(), CAPABILITIES_URL);
+		String capabilitiesUrl = String.format("%s%s", accessUtilities.getGeoServerBaseUrl(), getCapabilitiesUrl());
 
 		pzLogger.log(String.format("Created PostGIS Table for Resource %s", dataResource.getDataId()), Severity.INFORMATIONAL,
 				new AuditElement(ACCESS, "createPostGisTable", dataResource.getDataId()));
@@ -231,7 +235,7 @@ public class Deployer {
 		HttpEntity<byte[]> request = new HttpEntity<>(fileBytes, authHeaders.get());
 
 		// Send the Request
-		String url = String.format("%s/rest/workspaces/piazza/coveragestores/%s/file.geotiff", 
+		String url = String.format("%s/rest/workspaces/%s/coveragestores/%s/file.geotiff", workspaceName, 
 				accessUtilities.getGeoServerBaseUrl(), dataResource.getDataId());
 		try {
 			pzLogger.log(String.format("Creating new Raster Deployment to %s", url), Severity.INFORMATIONAL,
@@ -274,7 +278,7 @@ public class Deployer {
 
 		// Create a Deployment for this Resource
 		String deploymentId = uuidFactory.getUUID();
-		String capabilitiesUrl = String.format("%s%s", accessUtilities.getGeoServerBaseUrl(), CAPABILITIES_URL);
+		String capabilitiesUrl = String.format("%s%s", accessUtilities.getGeoServerBaseUrl(), getCapabilitiesUrl());
 		String deploymentLayerName = dataResource.getDataId();
 		return new Deployment(deploymentId, dataResource.getDataId(), accessUtilities.getGeoServerBaseUrl(), null, deploymentLayerName, capabilitiesUrl);
 	}
@@ -323,7 +327,7 @@ public class Deployer {
 		}
 
 		// If this was a Raster dataset that contained its own unique data store, then delete that Coverage Store.
-		url = String.format("%s/rest/workspaces/piazza/coveragestores/%s?purge=all&recurse=true", 
+		url = String.format("%s/rest/workspaces/%s/coveragestores/%s?purge=all&recurse=true", workspaceName,  
 				accessUtilities.getGeoServerBaseUrl(), deployment.getDataId());
 		try {
 			pzLogger.log(String.format("Deleting Coverage Store from Resource %s", url), Severity.INFORMATIONAL,
@@ -430,5 +434,13 @@ public class Deployer {
 	 */
 	public boolean doesDeploymentExist(String dataId) {
 		return accessor.getDeploymentByDataId(dataId) != null ? true : false;
+	}
+	
+	/**
+	 * Gets the Capabilities URL
+	 * @return capabilities URL
+	 */
+	private String getCapabilitiesUrl() {
+		return String.format("/%s/wfs?service=wfs&version=2.0.0&request=GetCapabilities", workspaceName);
 	}
 }
