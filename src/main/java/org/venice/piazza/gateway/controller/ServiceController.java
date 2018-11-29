@@ -43,10 +43,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
 
 import org.venice.piazza.gateway.controller.util.GatewayUtil;
 import org.venice.piazza.gateway.controller.util.PiazzaRestController;
+import org.venice.piazza.servicecontroller.controller.TaskManagedController;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -86,7 +87,10 @@ public class ServiceController extends PiazzaRestController {
 	private String SERVICECONTROLLER_URL;
 
 	@Autowired
-	private RestTemplate restTemplate;
+	private org.venice.piazza.servicecontroller.controller.ServiceController serviceControllerController;
+	@Autowired
+	private TaskManagedController taskManagedController;
+	
 	private static final String DEFAULT_PAGE_SIZE = "10";
 	private static final String DEFAULT_PAGE = "0";
 	private static final String DEFAULT_SORTBY = "resourceMetadata.createdOn";
@@ -139,10 +143,7 @@ public class ServiceController extends PiazzaRestController {
 			jobRequest.jobType = new RegisterServiceJob(service);
 			// Proxy the request to the Service Controller
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(
-						restTemplate.postForEntity(String.format("%s/%s", SERVICECONTROLLER_URL, "registerService"), jobRequest,
-								ServiceIdResponse.class).getBody(),
-						HttpStatus.CREATED);
+				ResponseEntity<PiazzaResponse> response = serviceControllerController.registerService(jobRequest);
 				logger.log(String.format("User %s Registered Service.", userName), Severity.INFORMATIONAL, new AuditElement(dn,
 						"completeServiceRegistration", ((ServiceIdResponse) response.getBody()).data.getServiceId()));
 				return response;
@@ -186,9 +187,7 @@ public class ServiceController extends PiazzaRestController {
 					Severity.INFORMATIONAL, new AuditElement(dn, "requestServiceMetadataFetch", serviceId));
 			// Proxy the request to the Service Controller instance
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(restTemplate
-						.getForEntity(String.format(URL_FORMAT, SERVICECONTROLLER_URL, SERVICE, serviceId), ServiceResponse.class)
-						.getBody(), HttpStatus.OK);
+				ResponseEntity<PiazzaResponse> response = serviceControllerController.getServiceInfo(serviceId);
 				logger.log(String.format("User %s Retrieved Service metadata for %s", gatewayUtil.getPrincipalName(user), serviceId),
 						Severity.INFORMATIONAL, new AuditElement(dn, "completeServiceMetadataFetch", serviceId));
 				return response;
@@ -222,7 +221,7 @@ public class ServiceController extends PiazzaRestController {
 			@ApiResponse(code = 401, message = "Unauthorized", response = ErrorResponse.class),
 			@ApiResponse(code = 404, message = "Not Found", response = ErrorResponse.class),
 			@ApiResponse(code = 500, message = "Internal Error", response = ErrorResponse.class) })
-	public ResponseEntity<PiazzaResponse> deleteService(
+	public ResponseEntity<?> deleteService(
 			@ApiParam(value = "The Id of the Service to unregister.", required = true) @PathVariable(value = "serviceId") String serviceId,
 			@ApiParam(value = "Determines if the Service should be completely removed, or just disabled. If set to false, the Service will be entirely deleted.", hidden = true) @RequestParam(value = "softDelete", required = false) boolean softDelete,
 			Principal user) {
@@ -237,8 +236,7 @@ public class ServiceController extends PiazzaRestController {
 			String url = String.format(URL_FORMAT, SERVICECONTROLLER_URL, SERVICE, serviceId);
 			url = (softDelete) ? (String.format("%s?softDelete=%s", url, softDelete)) : (url);
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(
-						restTemplate.exchange(url, HttpMethod.DELETE, null, SuccessResponse.class).getBody(), HttpStatus.OK);
+				ResponseEntity<String> response = serviceControllerController.deleteService(serviceId);
 				logger.log(String.format("User %s has Deleted Service %s", userName, serviceId), Severity.INFORMATIONAL,
 						new AuditElement(dn, "completeServiceDelete", serviceId));
 				return response;
@@ -286,16 +284,8 @@ public class ServiceController extends PiazzaRestController {
 			logger.log(String.format("User %s has requested Service update of %s", userName, serviceId), Severity.INFORMATIONAL,
 					new AuditElement(dn, "requestUpdateService", serviceId));
 
-			// Proxy the request to the Service Controller instance
-			HttpHeaders theHeaders = new HttpHeaders();
-			// headers.add("Authorization", "Basic " + credentials);
-			theHeaders.setContentType(MediaType.APPLICATION_JSON);
-			HttpEntity<Service> request = new HttpEntity<Service>(serviceData, theHeaders);
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(
-						restTemplate.exchange(String.format(URL_FORMAT, SERVICECONTROLLER_URL, SERVICE, serviceId), HttpMethod.PUT,
-								request, SuccessResponse.class).getBody(),
-						HttpStatus.OK);
+				ResponseEntity<PiazzaResponse> response = serviceControllerController.updateServiceMetadata(serviceId, serviceData);
 				logger.log(String.format("User %s has Updated Service %s", userName, serviceId), Severity.INFORMATIONAL,
 						new AuditElement(dn, "completeUpdateService", serviceId));
 				return response;
@@ -362,26 +352,8 @@ public class ServiceController extends PiazzaRestController {
 				return new ResponseEntity<PiazzaResponse>(new ErrorResponse(validationError, GATEWAY), HttpStatus.BAD_REQUEST);
 			}
 
-			// Proxy the request to the Service Controller
-			String url = String.format("%s/%s?page=%s&perPage=%s", SERVICECONTROLLER_URL, SERVICE, page, perPage);
-			// Attach keywords if specified
-			if ((keyword != null) && (keyword.isEmpty() == false)) {
-				url = String.format("%s&keyword=%s", url, keyword);
-			}
-			// Add username if specified
-			if ((createdBy != null) && (createdBy.isEmpty() == false)) {
-				url = String.format("%s&userName=%s", url, createdBy);
-			}
-			// Sort by and order
-			if ((order != null) && (order.isEmpty() == false)) {
-				url = String.format("%s&order=%s", url, order);
-			}
-			if ((sortBy != null) && (sortBy.isEmpty() == false)) {
-				url = String.format("%s&sortBy=%s", url, sortBy);
-			}
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(
-						restTemplate.getForEntity(url, ServiceListResponse.class).getBody(), HttpStatus.OK);
+				ResponseEntity<PiazzaResponse> response = serviceControllerController.getServices(page, perPage, order, sortBy, keyword, createdBy);
 				logger.log(String.format("User %s Retrieved Service List.", userName), Severity.INFORMATIONAL,
 						new AuditElement(dn, "completeServiceList", ""));
 				return response;
@@ -461,8 +433,7 @@ public class ServiceController extends PiazzaRestController {
 			HttpEntity request = new HttpEntity(theHeaders);
 			try {
 				String url = String.format("%s/service/%s/task?userName=%s", SERVICECONTROLLER_URL, serviceId, userName);
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(
-						restTemplate.exchange(url, HttpMethod.POST, request, ServiceJobResponse.class).getBody(), HttpStatus.OK);
+				ResponseEntity<PiazzaResponse> response = taskManagedController.getNextServiceJobFromQueue(userName, serviceId);
 				logger.log(String.format("User %s has Retrieve Service Job information for Service %s", userName, serviceId),
 						Severity.INFORMATIONAL, new AuditElement(dn, "completeRetrieveTaskManagedJob", serviceId));
 				return response;
@@ -511,14 +482,8 @@ public class ServiceController extends PiazzaRestController {
 			logger.log(String.format("User %s has requested Update Task-Managed Service Job for Job %s", userName, jobId),
 					Severity.INFORMATIONAL, new AuditElement(dn, "requestUpdateTaskManagedJob", jobId));
 
-			// Proxy the request to the Service Controller instance
-			HttpHeaders theHeaders = new HttpHeaders();
-			theHeaders.setContentType(MediaType.APPLICATION_JSON);
-			HttpEntity<StatusUpdate> request = new HttpEntity<>(statusUpdate, theHeaders);
 			try {
-				String url = String.format("%s/service/%s/task/%s?userName=%s", SERVICECONTROLLER_URL, serviceId, jobId, userName);
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(
-						restTemplate.exchange(url, HttpMethod.POST, request, SuccessResponse.class).getBody(), HttpStatus.OK);
+				ResponseEntity<PiazzaResponse> response = taskManagedController.updateServiceJobStatus(userName, serviceId, jobId, statusUpdate);
 				logger.log(String.format("User %s has Updated Service Job %s information for Service %s", userName, jobId, serviceId),
 						Severity.INFORMATIONAL, new AuditElement(dn, "completeUpdatedTaskManagedJob", jobId));
 				return response;
@@ -564,9 +529,7 @@ public class ServiceController extends PiazzaRestController {
 			theHeaders.setContentType(MediaType.APPLICATION_JSON);
 			HttpEntity request = new HttpEntity(theHeaders);
 			try {
-				String url = String.format("%s/service/%s/task/metadata?userName=%s", SERVICECONTROLLER_URL, serviceId, userName);
-				ResponseEntity<Map<String, Object>> response = new ResponseEntity<>(
-						restTemplate.exchange(url, HttpMethod.GET, request, HashMap.class).getBody(), HttpStatus.OK);
+				ResponseEntity<Map<String, Object>> response = taskManagedController.getServiceQueueData(userName, serviceId);
 				logger.log(String.format("User %s has Retrieve Service Job information for Service %s", userName, serviceId),
 						Severity.INFORMATIONAL, new AuditElement(dn, "completeRetrieveTaskManagedMetadata", serviceId));
 				return response;

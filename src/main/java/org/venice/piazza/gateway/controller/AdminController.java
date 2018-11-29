@@ -40,7 +40,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
 
 import org.venice.piazza.gateway.controller.util.GatewayUtil;
 import org.venice.piazza.gateway.controller.util.PiazzaRestController;
@@ -90,9 +89,6 @@ public class AdminController extends PiazzaRestController {
 	@Value("${release.url}")
 	private String RELEASE_URL;
 
-	@Autowired
-	private RestTemplate restTemplate;
-	
 
 	@Autowired
 	private AuthController idamAuthController;
@@ -123,33 +119,16 @@ public class AdminController extends PiazzaRestController {
 	 */
 	@ApiOperation(hidden = true, value = "Version")
 	@RequestMapping(value = "/version", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity getVersion() {
+	public ResponseEntity<?> getVersion() {
 		try {
-			// Check for local file
-			InputStream templateStream = null;
-			String localVersionJson = null;
-			try {
-				templateStream = getClass().getClassLoader().getResourceAsStream("pz-release.json");
-				localVersionJson = IOUtils.toString(templateStream);
-				return new ResponseEntity<String>(localVersionJson, HttpStatus.OK);
-			} catch (Exception exception) {
-				LOG.info("Could not find local version. Delegating to pz-release endpoint.", exception);
-			} finally {
-				try {
-					if (templateStream != null) {
-						templateStream.close();
-					}
-				} catch (Exception exception) {
-					LOG.error("Error closing Local Version Number Input Stream.", exception);
-				}
-			}
-
-			LOG.info("Returning release information from pz-release endpoint.");
-			return new ResponseEntity<String>(restTemplate.getForObject(RELEASE_URL, String.class), HttpStatus.OK);
-		} catch (Exception e) {
-			String error = String.format("Error retrieving version for Piazza: %s", e.getMessage());
-			LOG.error(error, e);
-			return new ResponseEntity<PiazzaResponse>(new ErrorResponse(error, GATEWAY), HttpStatus.INTERNAL_SERVER_ERROR);
+			InputStream templateStream = getClass().getClassLoader().getResourceAsStream("pz-release.json");
+			String localVersionJson = IOUtils.toString(templateStream);
+			return new ResponseEntity<String>(localVersionJson, HttpStatus.OK);
+		} catch (Exception exception) {
+			String error = String.format("Error retrieving version for Piazza: %s", exception.getMessage());
+			LOG.error(error, exception);
+			return new ResponseEntity<PiazzaResponse>(new ErrorResponse(error, GATEWAY),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
