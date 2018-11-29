@@ -86,8 +86,6 @@ public class DeploymentController extends PiazzaRestController {
 	private static final String DEFAULT_ORDER = "desc";
 	private static final String DEFAULT_SORTBY = "createdOn";
 	private static final String GATEWAY = "Gateway";
-	private static final String DEPLOYMENT = "deployment";
-	
 	private final static Logger LOG = LoggerFactory.getLogger(DeploymentController.class);
 
 	/**
@@ -346,8 +344,7 @@ public class DeploymentController extends PiazzaRestController {
 			String dn = gatewayUtil.getDistinguishedName(SecurityContextHolder.getContext().getAuthentication());
 			logger.log(String.format("User %s requested delete of DeploymentGroup %s", userName, deploymentGroupId), Severity.INFORMATIONAL,
 					new AuditElement(dn, "requestDeleteDeploymentGroup", deploymentGroupId));
-			// Broker to access
-			String url = String.format("%s/deployment/group/%s", ACCESS_URL, deploymentGroupId);
+			String.format("%s/deployment/group/%s", ACCESS_URL, deploymentGroupId);
 			try {
 				ResponseEntity<PiazzaResponse> response = accessController.deleteDeploymentGroup(deploymentGroupId);
 				logger.log(String.format("User %s successfully deleted DeploymentGroup %s", userName, deploymentGroupId),

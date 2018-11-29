@@ -79,7 +79,7 @@ public class ExecuteServiceHandler implements PiazzaJobHandler {
 	@Autowired
 	private UUIDFactory uuidFactory;
 	@Autowired
-	private RestTemplate template;
+	private RestTemplate restTemplate;
 	@Autowired
 	@Qualifier("RequestJobQueue")
 	private Queue requestJobQueue;
@@ -239,7 +239,7 @@ public class ExecuteServiceHandler implements PiazzaJobHandler {
 		if ("GET".equals(method)) {
 			logger.log("GetForEntity URL=" + url, Severity.INFORMATIONAL);
 			// execute job
-			return template.getForEntity(url, String.class);
+			return restTemplate.getForEntity(url, String.class);
 		} else if ("POST".equals(method)) {
 			HttpHeaders headers = new HttpHeaders();
 			// Set the mimeType of the request
@@ -249,7 +249,7 @@ public class ExecuteServiceHandler implements PiazzaJobHandler {
 
 			logger.log("PostForEntity URL=" + url, Severity.INFORMATIONAL);
 			try {
-				return template.postForEntity(url, requestEntity, String.class);
+				return restTemplate.postForEntity(url, requestEntity, String.class);
 			} catch (HttpServerErrorException hex) {
 				LOG.info(String.format("Server Error for URL %s:  %s", url, hex.getResponseBodyAsString()), hex);
 				throw new InterruptedException(hex.getResponseBodyAsString());

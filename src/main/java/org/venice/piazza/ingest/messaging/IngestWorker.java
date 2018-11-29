@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import com.amazonaws.AmazonClientException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -77,8 +76,7 @@ public class IngestWorker {
 	private IngestUtilities ingestUtilities;
 	@Autowired
 	private UUIDFactory uuidFactory;
-	@Autowired
-	private RestTemplate restTemplate;
+
 	@Autowired
 	private Queue updateJobsQueue;
 	@Autowired
