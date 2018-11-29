@@ -165,7 +165,7 @@ public class ServiceTests {
 				.thenReturn(new ResponseEntity<SuccessResponse>(new SuccessResponse("Deleted", "Service Controller"), HttpStatus.OK));
 
 		// Test
-		ResponseEntity<PiazzaResponse> entity = serviceController.deleteService("123456", false, user);
+		ResponseEntity<?> entity = serviceController.deleteService("123456", false, user);
 		SuccessResponse response = (SuccessResponse) entity.getBody();
 
 		// Verify

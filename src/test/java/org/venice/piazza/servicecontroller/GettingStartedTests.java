@@ -25,7 +25,6 @@ import org.mockito.MockitoAnnotations;
 import org.venice.piazza.servicecontroller.controller.GettingStartedController;
 import org.venice.piazza.servicecontroller.data.model.Message;
 
-import junit.framework.Assert;
 import util.PiazzaLogger;
 
 /**
