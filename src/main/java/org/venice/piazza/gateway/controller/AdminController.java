@@ -44,6 +44,8 @@ import org.springframework.web.client.RestTemplate;
 
 import org.venice.piazza.gateway.controller.util.GatewayUtil;
 import org.venice.piazza.gateway.controller.util.PiazzaRestController;
+import org.venice.piazza.idam.controller.AuthController;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -90,6 +92,12 @@ public class AdminController extends PiazzaRestController {
 
 	@Autowired
 	private RestTemplate restTemplate;
+	
+
+	@Autowired
+	private AuthController idamAuthController;
+	@Autowired
+	private org.venice.piazza.idam.controller.AdminController idamAdminController;
 
 	private static final Logger LOG = LoggerFactory.getLogger(AdminController.class);
 
@@ -206,8 +214,7 @@ public class AdminController extends PiazzaRestController {
 			HttpHeaders headers = new HttpHeaders();
 			headers.set(AUTHORIZATION, request.getHeader(AUTHORIZATION));
 			try {
-				return new ResponseEntity<PiazzaResponse>(restTemplate.exchange(SECURITY_URL + "/v2/key", HttpMethod.GET,
-						new HttpEntity<String>("parameters", headers), UUIDResponse.class).getBody(), HttpStatus.OK);
+				return idamAuthController.generateApiKeyV2();
 			} catch (HttpClientErrorException | HttpServerErrorException hee) {
 				LOG.error(hee.getResponseBodyAsString(), hee);
 				return new ResponseEntity<PiazzaResponse>(gatewayUtil.getErrorResponse(hee.getResponseBodyAsString()), hee.getStatusCode());
@@ -239,9 +246,8 @@ public class AdminController extends PiazzaRestController {
 					new AuditElement(dn, "requestUserProfile", username));
 			// Broker to IDAM
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(restTemplate
-						.getForEntity(String.format("%s/%s/%s.json", SECURITY_URL, "profile", username), UserProfileResponse.class)
-						.getBody(), HttpStatus.OK);
+				// TODO
+				ResponseEntity<PiazzaResponse> response = idamAdminController.getUserProfile(username);
 				logger.log(String.format("User %s successfully retrieved User Profile.", username), Severity.INFORMATIONAL,
 						new AuditElement(dn, "successUserProfile", username));
 				return response;
@@ -267,8 +273,7 @@ public class AdminController extends PiazzaRestController {
 			HttpHeaders headers = new HttpHeaders();
 			headers.set(AUTHORIZATION, request.getHeader(AUTHORIZATION));
 			try {
-				return new ResponseEntity<PiazzaResponse>(restTemplate.exchange(SECURITY_URL + "/v2/key", HttpMethod.POST,
-						new HttpEntity<String>("parameters", headers), UUIDResponse.class).getBody(), HttpStatus.CREATED);
+				return idamAuthController.generateApiKeyV2();
 			} catch (HttpClientErrorException | HttpServerErrorException hee) {
 				LOG.error(hee.getResponseBodyAsString(), hee);
 				return new ResponseEntity<PiazzaResponse>(gatewayUtil.getErrorResponse(hee.getResponseBodyAsString()), hee.getStatusCode());
