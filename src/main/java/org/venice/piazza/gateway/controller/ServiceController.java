@@ -81,8 +81,6 @@ public class ServiceController extends PiazzaRestController {
 	private GatewayUtil gatewayUtil;
 	@Autowired
 	private PiazzaLogger logger;
-	@Value("${servicecontroller.url}")
-	private String SERVICECONTROLLER_URL;
 
 	@Autowired
 	private org.venice.piazza.servicecontroller.controller.ServiceController serviceControllerController;
@@ -230,9 +228,6 @@ public class ServiceController extends PiazzaRestController {
 			logger.log(String.format("User %s has requested Service deletion of %s", userName, serviceId), Severity.INFORMATIONAL,
 					new AuditElement(dn, "requestServiceDelete", serviceId));
 
-			// Proxy the request to the Service Controller instance
-			String url = String.format(URL_FORMAT, SERVICECONTROLLER_URL, SERVICE, serviceId);
-			url = (softDelete) ? (String.format("%s?softDelete=%s", url, softDelete)) : (url);
 			try {
 				ResponseEntity<String> response = serviceControllerController.deleteService(serviceId);
 				logger.log(String.format("User %s has Deleted Service %s", userName, serviceId), Severity.INFORMATIONAL,
@@ -425,12 +420,7 @@ public class ServiceController extends PiazzaRestController {
 			logger.log(String.format("User %s has requested Retrieve Task-Managed Service Job for Service %s", userName, serviceId),
 					Severity.INFORMATIONAL, new AuditElement(dn, "requestRetrieveTaskManagedJob", serviceId));
 
-			// Proxy the request to the Service Controller instance
-			HttpHeaders theHeaders = new HttpHeaders();
-			theHeaders.setContentType(MediaType.APPLICATION_JSON);
-			HttpEntity request = new HttpEntity(theHeaders);
 			try {
-				String url = String.format("%s/service/%s/task?userName=%s", SERVICECONTROLLER_URL, serviceId, userName);
 				ResponseEntity<PiazzaResponse> response = taskManagedController.getNextServiceJobFromQueue(userName, serviceId);
 				logger.log(String.format("User %s has Retrieve Service Job information for Service %s", userName, serviceId),
 						Severity.INFORMATIONAL, new AuditElement(dn, "completeRetrieveTaskManagedJob", serviceId));

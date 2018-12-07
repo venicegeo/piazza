@@ -15,7 +15,10 @@
  **/
 package org.venice.piazza.gateway.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -42,8 +45,12 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import exception.PiazzaJobException;
+
+import org.venice.piazza.access.controller.AccessController;
 import org.venice.piazza.gateway.controller.DataController;
 import org.venice.piazza.gateway.controller.util.GatewayUtil;
+import org.venice.piazza.ingest.controller.IngestController;
+
 import model.data.DataResource;
 import model.data.type.GeoJsonDataType;
 import model.data.type.TextDataType;
@@ -77,6 +84,11 @@ public class DataTests {
 	private RestTemplate restTemplate;
 	@Mock
 	private AmazonS3 s3Client;
+	@Mock
+	private AccessController accessController;
+	@Mock
+	private IngestController ingestController;
+	
 	@InjectMocks
 	private DataController dataController;
 
@@ -116,11 +128,11 @@ public class DataTests {
 		mockResponse.data = new ArrayList<DataResource>();
 		mockResponse.getData().add(mockData);
 		mockResponse.pagination = new Pagination(new Long(1), 0, 10, "test", "asc");
-		when(restTemplate.getForEntity(anyString(), eq(DataResourceListResponse.class)))
-				.thenReturn(new ResponseEntity<DataResourceListResponse>(mockResponse, HttpStatus.OK));
+		when(accessController.getAllData(eq("123456"), eq(0), eq(10), eq("sortby"), eq("order"), eq("keyword"), eq("createdby")))
+				.thenReturn(new ResponseEntity<PiazzaResponse>(mockResponse, HttpStatus.OK));
 
 		// Get the data
-		ResponseEntity<PiazzaResponse> entity = dataController.getData(null, null, 0, 10, null, "asc", null, user);
+		ResponseEntity<PiazzaResponse> entity = dataController.getData("keyword", "123456", 0, 10, "order", "sortby", "createdby", user);
 		PiazzaResponse response = entity.getBody();
 
 		// Verify the results
@@ -129,20 +141,28 @@ public class DataTests {
 		assertTrue(dataList.getData().size() == 1);
 		assertTrue(dataList.getPagination().getCount() == 1);
 		assertTrue(entity.getStatusCode().equals(HttpStatus.OK));
-
+	}
+	
+	/**
+	 * Test exception during GET /data endpoint
+	 */
+	@Test
+	public void testGetData_Error() {
 		// Mock an Exception being thrown and handled.
-		when(restTemplate.getForEntity(anyString(), eq(DataResourceListResponse.class)))
+		when(accessController.getAllData(eq("123456"), eq(0), eq(10), eq("sortby"), eq("order"), eq("keyword"), eq("createdby")))
 				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
 		// Get the data
-		entity = dataController.getData(null, null, 0, 10, null, "asc", null, user);
-		response = entity.getBody();
+		ResponseEntity<PiazzaResponse> entity = dataController.getData("keyword", "123456", 0, 10, "order", "sortby", "createdby", user);
+		PiazzaResponse response = entity.getBody();
 
 		// Verify that a proper exception was thrown.
 		assertTrue(response instanceof ErrorResponse);
 		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 	}
 
+	
+	
 	/**
 	 * Test POST /data endpoint
 	 */
@@ -227,23 +247,33 @@ public class DataTests {
 	public void testGetDataItem() {
 		// Mock the Response
 		DataResourceResponse mockResponse = new DataResourceResponse(mockData);
-		when(restTemplate.getForEntity(anyString(), eq(DataResourceResponse.class)))
-				.thenReturn(new ResponseEntity<DataResourceResponse>(mockResponse, HttpStatus.OK));
+		when(accessController.getData(eq("123456")))
+			.thenReturn(new ResponseEntity<PiazzaResponse>(mockResponse, HttpStatus.OK));
+
 
 		// Test
 		ResponseEntity<PiazzaResponse> entity = dataController.getMetadata("123456", user);
 		PiazzaResponse response = entity.getBody();
 
 		// Verify
-		assertTrue(response instanceof ErrorResponse == false);
+		assertFalse(response instanceof ErrorResponse);
 		assertTrue(((DataResourceResponse) response).data.getDataId().equalsIgnoreCase(mockData.getDataId()));
 		assertTrue(entity.getStatusCode().equals(HttpStatus.OK));
-
+	}
+	
+	/**
+	 * Test exception during GET /data/{dataId}
+	 */
+	@Test
+	public void testGetDataItem_Error() {
+		// Mock the Response
+		when(accessController.getData(eq("123456")))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+		
 		// Test an Exception
-		when(restTemplate.getForEntity(anyString(), eq(DataResourceResponse.class)))
-				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-		entity = dataController.getMetadata("123456", user);
-		response = entity.getBody();
+
+		ResponseEntity<PiazzaResponse> entity = dataController.getMetadata("123456", user);
+		PiazzaResponse response = entity.getBody();
 		assertTrue(response instanceof ErrorResponse);
 		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 	}
@@ -254,8 +284,8 @@ public class DataTests {
 	@Test
 	public void testDeleteData() {
 		// Mock the Response
-		when(restTemplate.exchange(anyString(), any(), any(), eq(SuccessResponse.class)))
-				.thenReturn(new ResponseEntity<SuccessResponse>(new SuccessResponse("Deleted", "Ingest"), HttpStatus.OK));
+		when(ingestController.deleteData("123456"))
+				.thenReturn(new ResponseEntity<PiazzaResponse>(new SuccessResponse("Deleted", "Ingest"), HttpStatus.OK));
 
 		// Test
 		ResponseEntity<PiazzaResponse> entity = dataController.deleteData("123456", user);
@@ -264,13 +294,22 @@ public class DataTests {
 		// Verify
 		assertTrue(response instanceof ErrorResponse == false);
 		assertTrue(entity.getStatusCode().equals(HttpStatus.OK));
+	}
+	
+	/**
+	 * Test exception during DELETE /data/{dataId}
+	 */
+	@Test
+	public void testDeleteData_Error() {
+		// Mock the Response
+		when(ingestController.deleteData("123456"))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-		// Test an Exception
-		when(restTemplate.exchange(anyString(), any(), any(), eq(SuccessResponse.class)))
-				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+		// Test
+		ResponseEntity<PiazzaResponse> entity = dataController.deleteData("123456", user);
+		PiazzaResponse response = entity.getBody();
 
-		entity = dataController.deleteData("123456", user);
-		response = entity.getBody();
+		// Verify
 		assertTrue(response instanceof ErrorResponse);
 		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 	}
@@ -281,19 +320,29 @@ public class DataTests {
 	@Test
 	public void testUpdateData() {
 		// Mock
-		when(restTemplate.postForEntity(anyString(), any(), eq(SuccessResponse.class)))
-				.thenReturn(new ResponseEntity<SuccessResponse>(new SuccessResponse("Updated", "Ingest"), HttpStatus.OK));
+		when(ingestController.updateMetadata("123456", mockData.getMetadata()))
+				.thenReturn(new ResponseEntity<PiazzaResponse>(new SuccessResponse("Updated", "Ingest"), HttpStatus.OK));
 
 		// Test
 		ResponseEntity<PiazzaResponse> entity = dataController.updateMetadata("123456", mockData.getMetadata(), user);
 
 		// Verify
 		assertTrue(entity.getBody() instanceof SuccessResponse);
+	}
 
-		// Test an Exception
-		when(restTemplate.postForEntity(anyString(), any(), eq(SuccessResponse.class)))
-				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-		entity = dataController.updateMetadata("123456", mockData.getMetadata(), user);
+	/**
+	 * Test exception during PUT /data/{dataId}
+	 */
+	@Test
+	public void testUpdateData_Error() {
+		// Mock
+		when(ingestController.updateMetadata("123456", mockData.getMetadata()))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+
+		// Test
+		ResponseEntity<PiazzaResponse> entity = dataController.updateMetadata("123456", mockData.getMetadata(), user);
+
+		// Verify
 		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 		assertTrue(entity.getBody() instanceof ErrorResponse);
 	}
@@ -305,22 +354,33 @@ public class DataTests {
 	public void testDownload() throws Exception {
 		// Mock
 		ResponseEntity<byte[]> mockResponse = new ResponseEntity<byte[]>("Content".getBytes(), HttpStatus.OK);
-		when(restTemplate.getForEntity(anyString(), eq(byte[].class))).thenReturn(mockResponse);
+		when(accessController.accessFile("123456", "test.txt"))
+			.thenReturn(mockResponse);
 
 		// Test
 		ResponseEntity<?> entity = dataController.getFile("123456", "test.txt", user);
+		byte[] response = (byte[]) entity.getBody();
 
 		// Verify
 		assertTrue(entity.getStatusCode().equals(HttpStatus.OK));
-		System.out.println(entity.getBody().toString());
+		assertEquals("Content", new String(response));
+	}
+	
+	/**
+	 * Test exception during GET /file/{dataId}
+	 */
+	@Test
+	public void testDownload_Error() throws Exception {
+		// Mock
+		when(accessController.accessFile("123456", "test.txt"))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-		// Test an Exception
-		when(restTemplate.getForEntity(anyString(), eq(byte[].class))).thenThrow(new RestClientException(""));
-		try {
-			entity = dataController.getFile("123456", "test.txt", user);
-		} catch (Exception exception) {
-			assertTrue(exception.getMessage().contains("Error downloading file"));
-		}
+		// Test+Verify
+		ResponseEntity<?> entity = dataController.getFile("123456", "test.txt", user);
+		PiazzaResponse response = (PiazzaResponse) entity.getBody();
 
+		// Verify
+		assertTrue(response instanceof ErrorResponse);
+		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 	}
 }

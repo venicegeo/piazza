@@ -33,6 +33,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
 import exception.InvalidInputException;
+
+import org.venice.piazza.access.controller.AccessController;
 import org.venice.piazza.ingest.controller.IngestController;
 import org.venice.piazza.ingest.messaging.IngestThreadManager;
 import org.venice.piazza.ingest.persist.DatabaseAccessor;
@@ -63,6 +65,9 @@ public class ControllerTests {
 	private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 	@Mock
 	private RestTemplate restTemplate;
+	@Mock
+	private AccessController accessController;
+
 
 	@InjectMocks
 	private IngestController ingestController;

@@ -148,7 +148,8 @@ public class DataController extends PiazzaRestController {
 			
 			// Proxy the request to Pz-Access
 			try {
-				ResponseEntity<PiazzaResponse> response =  accessController.getAllData(createdByJobId, perPage, perPage, sortBy, order, keyword, createdBy);
+				System.out.println(createdByJobId + " " + page + " " + perPage + " " + sortBy + " " + order + " " + keyword + " " + createdBy);
+				ResponseEntity<PiazzaResponse> response =  accessController.getAllData(createdByJobId, page, perPage, sortBy, order, keyword, createdBy);
 				logger.log(String.format("User %s successfully retrieved Data List.", userName), Severity.INFORMATIONAL,
 						new AuditElement(dn, "successDataList", ""));
 				return response;
@@ -392,7 +393,6 @@ public class DataController extends PiazzaRestController {
 			String dn = gatewayUtil.getDistinguishedName(SecurityContextHolder.getContext().getAuthentication());
 			logger.log(String.format("User %s requested Resource Metadata for %s.", userName, dataId), Severity.INFORMATIONAL,
 					new AuditElement(dn, "requestGetData", dataId));
-			// Proxy the request to Pz-Access
 			try {
 				ResponseEntity<PiazzaResponse> response = accessController.getData(dataId);
 				logger.log(String.format("User %s successfully got Resource Metadata for Data %s", userName, dataId),
