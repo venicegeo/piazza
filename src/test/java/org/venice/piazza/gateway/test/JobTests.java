@@ -87,6 +87,8 @@ public class JobTests {
 	private Queue abortJobsQueue;
 	@Mock
 	private ServiceController serviceController;
+	@Mock
+	private org.venice.piazza.jobmanager.controller.JobController jobManagerController;
 	@InjectMocks
 	private JobController jobController;
 
@@ -122,9 +124,8 @@ public class JobTests {
 	@Test
 	public void testGetStatus() {
 		// Mock
-		ResponseEntity<JobStatusResponse> mockResponse = new ResponseEntity<JobStatusResponse>(new JobStatusResponse(mockJob),
-				HttpStatus.OK);
-		when(restTemplate.getForEntity(anyString(), eq(JobStatusResponse.class))).thenReturn(mockResponse);
+		when(jobManagerController.getJobStatus("123456"))
+			.thenReturn(new ResponseEntity<PiazzaResponse>(new JobStatusResponse(mockJob),HttpStatus.OK));
 
 		// Test
 		ResponseEntity<PiazzaResponse> entity = jobController.getJobStatus("123456", user);
@@ -136,12 +137,21 @@ public class JobTests {
 		assertTrue(response.data.status.equalsIgnoreCase(StatusUpdate.STATUS_RUNNING));
 		assertTrue(response.data.progress.getPercentComplete().equals(50));
 		assertTrue(response.data.createdBy.equals("Test User 2"));
+	}
+	
+	/**
+	 * Test exception during GET /job/{jobId}
+	 */
+	@Test
+	public void testGetStatus_Error() {
+		// Mock
+		when(jobManagerController.getJobStatus("123456"))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-		// Test Exception
-		when(restTemplate.getForEntity(anyString(), eq(JobStatusResponse.class)))
-				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+		// Test
+		ResponseEntity<PiazzaResponse> entity = jobController.getJobStatus("123456", user);
 
-		entity = jobController.getJobStatus("123456", user);
+		// Verify
 		assertTrue(entity.getBody() instanceof ErrorResponse);
 		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 	}
@@ -152,9 +162,8 @@ public class JobTests {
 	@Test
 	public void testAbort() {
 		// Mock
-		ResponseEntity<SuccessResponse> mockEntity = new ResponseEntity<SuccessResponse>(new SuccessResponse("Deleted", "Job Manager"),
-				HttpStatus.OK);
-		when(restTemplate.postForEntity(anyString(), any(), eq(SuccessResponse.class))).thenReturn(mockEntity);
+		when(jobManagerController.abortJob(any()))
+			.thenReturn(new ResponseEntity<PiazzaResponse>(new SuccessResponse("Deleted", "Job Manager"), HttpStatus.OK));
 		when(abortJobsQueue.getName()).thenReturn("AbortJobQueue");
 
 		// Test
@@ -162,12 +171,22 @@ public class JobTests {
 
 		// Verify
 		assertTrue(entity.getStatusCode().equals(HttpStatus.OK));
+	}
+	
+	/**
+	 * Test exception during DELETE /job/{jobId}
+	 */
+	@Test
+	public void testAbort_Error() {
+		// Mock
+		when(jobManagerController.abortJob(any()))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+		when(abortJobsQueue.getName()).thenReturn("AbortJobQueue");
 
-		// Test Exception
-		when(restTemplate.postForEntity(anyString(), any(), eq(SuccessResponse.class)))
-				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+		// Test
+		ResponseEntity<PiazzaResponse> entity = jobController.abortJob("123456", "Not Needed", user);
 
-		entity = jobController.abortJob("123456", "Not Needed", user);
+		// Verify
 		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 		assertTrue(entity.getBody() instanceof ErrorResponse);
 	}
@@ -178,20 +197,29 @@ public class JobTests {
 	@Test
 	public void testRepeat() {
 		// Mock
-		ResponseEntity<JobResponse> mockEntity = new ResponseEntity<JobResponse>(new JobResponse("Updated"), HttpStatus.OK);
-		when(restTemplate.postForEntity(anyString(), any(), eq(JobResponse.class))).thenReturn(mockEntity);
+		when(jobManagerController.repeatJob(any()))
+			.thenReturn(new ResponseEntity<PiazzaResponse>(new JobResponse("Updated"), HttpStatus.CREATED));
 
 		// Test
 		ResponseEntity<PiazzaResponse> entity = jobController.repeatJob("123456", user);
 
 		// Verify
 		assertTrue(entity.getStatusCode().equals(HttpStatus.CREATED));
+	}
+	
+	/**
+	 * Test exception during PUT /job/{jobId}
+	 */
+	@Test
+	public void testRepeat_Error() {
+		// Mock
+		when(jobManagerController.repeatJob(any()))
+		.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-		// Test Exception
-		when(restTemplate.postForEntity(anyString(), any(), eq(JobResponse.class)))
-				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+		// Test
+		ResponseEntity<PiazzaResponse> entity = jobController.repeatJob("123456", user);
 
-		entity = jobController.repeatJob("123456", user);
+		// Verify
 		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 		assertTrue(entity.getBody() instanceof ErrorResponse);
 	}

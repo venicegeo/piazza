@@ -2,7 +2,6 @@ package org.venice.piazza.servicecontroller.controller;
 
 import exception.InvalidInputException;
 import model.job.type.ExecuteServiceJob;
-import model.response.PiazzaResponse;
 import model.service.metadata.Service;
 import model.status.StatusUpdate;
 import org.junit.Assert;
@@ -13,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.ResourceAccessException;
 import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
 import org.venice.piazza.servicecontroller.taskmanaged.ServiceTaskManager;

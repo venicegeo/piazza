@@ -235,7 +235,7 @@ public class JobController {
 					Severity.INFORMATIONAL, new AuditElement(request.createdBy, "repeatedJob", ((RepeatJob) request.jobType).getJobId()));
 
 			// Return the Job Id
-			return new ResponseEntity<>(new JobResponse(newJobId), HttpStatus.OK);
+			return new ResponseEntity<>(new JobResponse(newJobId), HttpStatus.CREATED);
 		} catch (Exception exception) {
 			String error = String.format("Error Repeating Job: %s", exception.getMessage());
 			LOG.error(error, exception);

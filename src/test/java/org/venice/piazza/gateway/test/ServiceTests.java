@@ -15,6 +15,7 @@
  **/
 package org.venice.piazza.gateway.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -44,6 +45,8 @@ import org.springframework.web.client.RestTemplate;
 
 import org.venice.piazza.gateway.controller.ServiceController;
 import org.venice.piazza.gateway.controller.util.GatewayUtil;
+import org.venice.piazza.servicecontroller.controller.TaskManagedController;
+
 import model.job.metadata.ResourceMetadata;
 import model.response.ErrorResponse;
 import model.response.Pagination;
@@ -73,6 +76,10 @@ public class ServiceTests {
 	private GatewayUtil gatewayUtil;
 	@Mock
 	private RestTemplate restTemplate;
+	@Mock
+	private org.venice.piazza.servicecontroller.controller.ServiceController serviceControllerController;
+	@Mock
+	private TaskManagedController taskManagedController;
 	@InjectMocks
 	private ServiceController serviceController;
 
@@ -109,8 +116,8 @@ public class ServiceTests {
 		Service service = new Service();
 		service.setServiceId("123456");
 		ServiceIdResponse mockResponse = new ServiceIdResponse(service.getServiceId());
-		when(restTemplate.postForEntity(anyString(), any(), eq(ServiceIdResponse.class)))
-				.thenReturn(new ResponseEntity<ServiceIdResponse>(mockResponse, HttpStatus.CREATED));
+		when(serviceControllerController.registerService(any()))
+			.thenReturn(new ResponseEntity<PiazzaResponse>(mockResponse, HttpStatus.CREATED));
 
 		// Test
 		ResponseEntity<PiazzaResponse> entity = serviceController.registerService(service, user);
@@ -119,11 +126,24 @@ public class ServiceTests {
 		// Verify
 		assertTrue(entity.getStatusCode().equals(HttpStatus.CREATED));
 		assertTrue(response.data.getServiceId().equals("123456"));
+	}
 
-		// Test Exception
-		when(restTemplate.postForEntity(anyString(), any(), eq(ServiceIdResponse.class)))
-				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-		entity = serviceController.registerService(service, user);
+	/**
+	 * Test exception during POST /service endpoint
+	 */
+	@Test
+	public void testRegister_Error() {
+		// Mock
+		Service service = new Service();
+		service.setServiceId("123456");
+		ServiceIdResponse mockResponse = new ServiceIdResponse(service.getServiceId());
+		when(serviceControllerController.registerService(any()))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+
+		// Test
+		ResponseEntity<PiazzaResponse> entity = serviceController.registerService(service, user);
+
+		// Verify
 		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 		assertTrue(entity.getBody() instanceof ErrorResponse);
 	}
@@ -135,8 +155,8 @@ public class ServiceTests {
 	public void testGetMetadata() {
 		// Mock
 		ServiceResponse mockResponse = new ServiceResponse(mockService);
-		when(restTemplate.getForEntity(anyString(), eq(ServiceResponse.class)))
-				.thenReturn(new ResponseEntity<ServiceResponse>(mockResponse, HttpStatus.OK));
+		when(serviceControllerController.getServiceInfo("123456"))
+			.thenReturn(new ResponseEntity<PiazzaResponse>(mockResponse, HttpStatus.OK));
 
 		// Test
 		ResponseEntity<PiazzaResponse> entity = serviceController.getService("123456", user);
@@ -146,12 +166,22 @@ public class ServiceTests {
 		assertTrue(entity.getStatusCode().equals(HttpStatus.OK));
 		assertTrue(response.data.getServiceId().equalsIgnoreCase("123456"));
 		assertTrue(response.data.getResourceMetadata().getName().equalsIgnoreCase("Test"));
+	}
+	
+	/**
+	 * Test exception during GET /service/{serviceId}
+	 */
+	@Test
+	public void testGetMetadata_Error() {
+		// Mock
+		when(serviceControllerController.getServiceInfo("123456"))
+			.thenThrow(new HttpServerErrorException(HttpStatus.NOT_FOUND));
 
-		// Test Exception
-		when(restTemplate.getForEntity(anyString(), eq(ServiceResponse.class)))
-				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-		entity = serviceController.getService("123456", user);
-		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
+		// Test
+		ResponseEntity<PiazzaResponse> entity = serviceController.getService("123456", user);
+
+		// Verify
+		assertTrue(entity.getStatusCode().equals(HttpStatus.NOT_FOUND));
 		assertTrue(entity.getBody() instanceof ErrorResponse);
 	}
 
@@ -161,47 +191,67 @@ public class ServiceTests {
 	@Test
 	public void testDelete() {
 		// Mock
-		when(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), eq(null), eq(SuccessResponse.class)))
-				.thenReturn(new ResponseEntity<SuccessResponse>(new SuccessResponse("Deleted", "Service Controller"), HttpStatus.OK));
+		when(serviceControllerController.deleteService("123456"))
+			.thenReturn(new ResponseEntity<String>("Deleted", HttpStatus.OK));
 
 		// Test
-		ResponseEntity<PiazzaResponse> entity = serviceController.deleteService("123456", false, user);
-		SuccessResponse response = (SuccessResponse) entity.getBody();
+		ResponseEntity<?> entity = serviceController.deleteService("123456", false, user);
+		String response = (String) entity.getBody();
 
 		// Verify
 		assertTrue(entity.getStatusCode().equals(HttpStatus.OK));
-		assertTrue(response.data.getMessage().contains("Deleted"));
+		assertTrue(response.contains("Deleted"));
+	}
 
-		// Test Exception
-		when(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), eq(null), eq(SuccessResponse.class)))
-				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-		entity = serviceController.deleteService("123456", false, user);
+	/**
+	 * Test exception during DELETE /service/{serviceId}
+	 */
+	@Test
+	public void testDelete_Error() {
+		// Mock
+		when(serviceControllerController.deleteService("123456"))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+
+		// Test
+		ResponseEntity<?> entity = serviceController.deleteService("123456", false, user);
+
+		// Verify
 		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 		assertTrue(entity.getBody() instanceof ErrorResponse);
 	}
 
+	
 	/**
 	 * Test PUT /service/{serviceId}
 	 */
 	@Test
 	public void testUpdateMetadata() {
 		// Mock
-		HttpEntity<Service> request = new HttpEntity<Service>(null, null);
-		doReturn(new ResponseEntity<PiazzaResponse>(new SuccessResponse("Yes", "Gateway"), HttpStatus.OK)).when(restTemplate)
-				.exchange(any(String.class), eq(HttpMethod.PUT), any(request.getClass()), eq(SuccessResponse.class));
-
+		when(serviceControllerController.updateServiceMetadata("123456", mockService))
+			.thenReturn(new ResponseEntity<PiazzaResponse>(new SuccessResponse("Yes", "Gateway"), HttpStatus.OK));
+		
 		// Test
 		ResponseEntity<PiazzaResponse> entity = serviceController.updateService("123456", mockService, user);
 
 		// Verify
 		assertTrue(entity.getBody() instanceof SuccessResponse);
+	}
+	
+	/**
+	 * Test exception during PUT /service/{serviceId}
+	 */
+	@Test
+	public void testUpdateMetadata_Error() {
+		// Mock
+		when(serviceControllerController.updateServiceMetadata("123456", mockService))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));		
+		
+		// Test
+		ResponseEntity<PiazzaResponse> entity = serviceController.updateService("123456", mockService, user);
 
-		// Test Exception
-		doThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR)).when(restTemplate).exchange(any(String.class),
-				eq(HttpMethod.PUT), any(request.getClass()), eq(SuccessResponse.class));
-		ResponseEntity<PiazzaResponse> entity2 = serviceController.updateService("123456", mockService, user);
-		assertTrue(entity2.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
-		assertTrue(entity2.getBody() instanceof ErrorResponse);
+		// Verify
+		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
+		assertTrue(entity.getBody() instanceof ErrorResponse);
 	}
 
 	/**
@@ -210,26 +260,38 @@ public class ServiceTests {
 	@Test
 	public void testNextJobInQueue() {
 		// Mock
-		HttpEntity<Service> request = new HttpEntity<Service>(null, null);
 		ServiceJobResponse mockResponse = new ServiceJobResponse();
 		mockResponse.data = mockResponse.new ServiceJobData();
 		mockResponse.data.setJobId("123456");
-		doReturn(new ResponseEntity<PiazzaResponse>(mockResponse, HttpStatus.OK)).when(restTemplate).exchange(any(String.class),
-				eq(HttpMethod.POST), any(request.getClass()), eq(ServiceJobResponse.class));
+		
+		when(taskManagedController.getNextServiceJobFromQueue(anyString(), eq("123456")))
+			.thenReturn(new ResponseEntity<PiazzaResponse>(mockResponse, HttpStatus.OK));
 
 		// Test
 		ResponseEntity<PiazzaResponse> entity = serviceController.getNextJobInQueue("123456", user);
 
 		// Verify
+		assertTrue(entity.getStatusCode().equals(HttpStatus.OK));
 		assertTrue(entity.getBody() instanceof ServiceJobResponse);
-
-		// Test Exception
-		doThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR)).when(restTemplate).exchange(any(String.class),
-				eq(HttpMethod.POST), any(request.getClass()), eq(ServiceJobResponse.class));
-		ResponseEntity<PiazzaResponse> entity2 = serviceController.getNextJobInQueue("123456", user);
-		assertTrue(entity2.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
-		assertTrue(entity2.getBody() instanceof ErrorResponse);
 	}
+	
+	/**
+	 * Test exception during GET /service/id/task
+	 */
+	@Test
+	public void testNextJobInQueue_Error() {
+		// Mock		
+		when(taskManagedController.getNextServiceJobFromQueue(anyString(), eq("123456")))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+
+		// Test
+		ResponseEntity<PiazzaResponse> entity = serviceController.getNextJobInQueue("123456", user);
+
+		// Verify
+		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
+		assertTrue(entity.getBody() instanceof ErrorResponse);
+	}
+
 
 	/**
 	 * Test POST /service/{serviceId}/task/{jobId}
@@ -237,23 +299,31 @@ public class ServiceTests {
 	@Test
 	public void testUpdateJobStatus() {
 		// Mock
-		HttpEntity<Service> request = new HttpEntity<Service>(null, null);
-		SuccessResponse mockResponse = new SuccessResponse("Test", "Test");
-		doReturn(new ResponseEntity<PiazzaResponse>(mockResponse, HttpStatus.OK)).when(restTemplate).exchange(any(String.class),
-				eq(HttpMethod.POST), any(request.getClass()), eq(SuccessResponse.class));
+		when(taskManagedController.updateServiceJobStatus(eq(gatewayUtil.getPrincipalName(user)), eq("serviceId"), eq("jobId"), any()))
+			.thenReturn(new ResponseEntity<PiazzaResponse>(new SuccessResponse("Test", "Test"), HttpStatus.OK));
 
 		// Test
 		ResponseEntity<PiazzaResponse> entity = serviceController.updateServiceJobStatus("serviceId", "jobId", new StatusUpdate(), user);
 
 		// Verify
 		assertTrue(entity.getBody() instanceof SuccessResponse);
+	}
 
-		// Test Exception
-		doThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR)).when(restTemplate).exchange(any(String.class),
-				eq(HttpMethod.POST), any(request.getClass()), eq(SuccessResponse.class));
-		ResponseEntity<PiazzaResponse> entity2 = serviceController.updateServiceJobStatus("serviceId", "jobId", new StatusUpdate(), user);
-		assertTrue(entity2.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
-		assertTrue(entity2.getBody() instanceof ErrorResponse);
+	/**
+	 * Test exception during POST /service/{serviceId}/task/{jobId}
+	 */
+	@Test
+	public void testUpdateJobStatus_Error() {
+		// Mock
+		when(taskManagedController.updateServiceJobStatus(eq(gatewayUtil.getPrincipalName(user)), eq("serviceId"), eq("jobId"), any()))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+
+		// Test
+		ResponseEntity<PiazzaResponse> entity = serviceController.updateServiceJobStatus("serviceId", "jobId", new StatusUpdate(), user);
+
+		// Verify
+		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
+		assertTrue(entity.getBody() instanceof ErrorResponse);
 	}
 
 	/**
@@ -262,23 +332,33 @@ public class ServiceTests {
 	@Test
 	public void testServiceQueueData() {
 		// Mock
-		HttpEntity<Service> request = new HttpEntity<Service>(null, null);
 		Map<String, Object> mockResponse = new HashMap<String, Object>();
-		doReturn(new ResponseEntity<Map<String, Object>>(mockResponse, HttpStatus.OK)).when(restTemplate).exchange(any(String.class),
-				eq(HttpMethod.GET), any(request.getClass()), eq(HashMap.class));
+		
+		when(taskManagedController.getServiceQueueData(anyString(), eq("serviceId")))
+			.thenReturn(new ResponseEntity<Map<String, Object>>(mockResponse, HttpStatus.OK));
 
 		// Test
 		ResponseEntity<?> entity = serviceController.getServiceQueueData("serviceId", user);
 
 		// Verify
-		assertTrue(entity.getBody() instanceof HashMap);
+		assertTrue(entity.getBody() instanceof Map<?,?>);
+	}
+	
+	/**
+	 * Test exception during GET /service/{serviceId}/task/metadata
+	 */
+	@Test
+	public void testServiceQueueData_Error() {
+		// Mock
+		when(taskManagedController.getServiceQueueData(anyString(), eq("serviceId")))
+		.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-		// Test Exception
-		doThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR)).when(restTemplate).exchange(any(String.class),
-				eq(HttpMethod.GET), any(request.getClass()), eq(HashMap.class));
-		ResponseEntity<?> entity2 = serviceController.getServiceQueueData("serviceId", user);
-		assertTrue(entity2.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
-		assertTrue(entity2.getBody() instanceof ErrorResponse);
+		// Test
+		ResponseEntity<?> entity = serviceController.getServiceQueueData("serviceId", user);
+
+		// Verify
+		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
+		assertTrue(entity.getBody() instanceof ErrorResponse);
 	}
 
 	/**
@@ -291,11 +371,12 @@ public class ServiceTests {
 		mockResponse.data = new ArrayList<Service>();
 		mockResponse.getData().add(mockService);
 		mockResponse.pagination = new Pagination(new Long(1), 0, 10, "test", "asc");
-		when(restTemplate.getForEntity(anyString(), eq(ServiceListResponse.class)))
-				.thenReturn(new ResponseEntity<ServiceListResponse>(mockResponse, HttpStatus.OK));
+		
+		when(serviceControllerController.getServices(0, 10, "order", "sortBy", "keyword", "createdBy"))
+				.thenReturn(new ResponseEntity<PiazzaResponse>(mockResponse, HttpStatus.OK));
 
 		// Test
-		ResponseEntity<PiazzaResponse> entity = serviceController.getServices(null, 0, 10, null, null, null, user);
+		ResponseEntity<PiazzaResponse> entity = serviceController.getServices("keyword", 0, 10, "createdBy", "order", "sortBy", user);
 		PiazzaResponse response = entity.getBody();
 
 		// Verify
@@ -304,12 +385,22 @@ public class ServiceTests {
 		assertTrue(serviceList.getData().size() == 1);
 		assertTrue(serviceList.getPagination().getCount() == 1);
 		assertTrue(entity.getStatusCode().equals(HttpStatus.OK));
+	}
+	
+	/**
+	 * Test exception during GET /service
+	 */
+	@Test
+	public void testGetServices_Error() {
+		// Mock
+		when(serviceControllerController.getServices(0, 10, "order", "sortBy", "keyword", "createdBy"))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-		// Test Exception
-		when(restTemplate.getForEntity(anyString(), eq(ServiceListResponse.class)))
-				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-		entity = serviceController.getServices(null, 0, 10, null, null, null, user);
-		response = entity.getBody();
+		// Test
+		ResponseEntity<PiazzaResponse> entity = serviceController.getServices("keyword", 0, 10, "createdBy", "order", "sortBy", user);
+		PiazzaResponse response = entity.getBody();
+
+		// Verify
 		assertTrue(response instanceof ErrorResponse);
 		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 	}

@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,8 +37,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
-
+import org.venice.piazza.access.controller.AccessController;
 import org.venice.piazza.gateway.controller.util.GatewayUtil;
 import org.venice.piazza.gateway.controller.util.PiazzaRestController;
 import io.swagger.annotations.Api;
@@ -75,20 +73,17 @@ public class DeploymentController extends PiazzaRestController {
 	private GatewayUtil gatewayUtil;
 	@Autowired
 	private PiazzaLogger logger;
-	@Value("${access.url}")
-	private String ACCESS_URL;
 	@Value("${SPACE}")
 	private String SPACE;
 
 	@Autowired
-	private RestTemplate restTemplate;
+	private AccessController accessController;
+	
 	private static final String DEFAULT_PAGE_SIZE = "10";
 	private static final String DEFAULT_PAGE = "0";
 	private static final String DEFAULT_ORDER = "desc";
 	private static final String DEFAULT_SORTBY = "createdOn";
 	private static final String GATEWAY = "Gateway";
-	private static final String DEPLOYMENT = "deployment";
-	
 	private final static Logger LOG = LoggerFactory.getLogger(DeploymentController.class);
 
 	/**
@@ -181,23 +176,8 @@ public class DeploymentController extends PiazzaRestController {
 				return new ResponseEntity<PiazzaResponse>(new ErrorResponse(validationError, GATEWAY), HttpStatus.BAD_REQUEST);
 			}
 			
-			// Proxy the request to Pz-Access
-			String url = String.format("%s/%s?page=%s&perPage=%s", ACCESS_URL, DEPLOYMENT, page, perPage);
-			// Attach keywords if specified
-			if ((keyword != null) && (keyword.isEmpty() == false)) {
-				url = String.format("%s&keyword=%s", url, keyword);
-			}
-			if ((order != null) && (order.isEmpty() == false)) {
-				url = String.format("%s&order=%s", url, order);
-			}
-			if ((sortBy != null) && (sortBy.isEmpty() == false)) {
-				url = String.format("%s&sortBy=%s", url, sortBy);
-			}
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(
-						restTemplate.getForEntity(url, DeploymentListResponse.class).getBody(), HttpStatus.OK);
-				logger.log(String.format("User %s Successfully obtained Deployment List query.", userName), Severity.INFORMATIONAL,
-						new AuditElement(dn, "successDeploymentList", ""));
+				ResponseEntity<PiazzaResponse> response = accessController.getAllDeployments(page, perPage, sortBy, order, keyword);
 				return response;
 			} catch (HttpClientErrorException | HttpServerErrorException hee) {
 				LOG.error("Error Listing Deployments.", hee);
@@ -241,9 +221,7 @@ public class DeploymentController extends PiazzaRestController {
 					new AuditElement(dn, "requestDeploymentData", deploymentId));
 			// Broker the request to Pz-Access
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(restTemplate
-						.getForEntity(String.format("%s/%s/%s", ACCESS_URL, DEPLOYMENT, deploymentId), DeploymentResponse.class)
-						.getBody(), HttpStatus.OK);
+				ResponseEntity<PiazzaResponse> response = accessController.getDeployment(deploymentId);
 				logger.log(String.format("User %s successfully retrieved Deployment Data for %s", userName, deploymentId),
 						Severity.INFORMATIONAL, new AuditElement(dn, "successDeploymentData", deploymentId));
 				return response;
@@ -289,10 +267,7 @@ public class DeploymentController extends PiazzaRestController {
 					new AuditElement(dn, "requestDeleteDeployment", deploymentId));
 			// Broker the request to Pz-Access
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(
-						restTemplate.exchange(String.format("%s/%s/%s", ACCESS_URL, DEPLOYMENT, deploymentId), HttpMethod.DELETE, null,
-								SuccessResponse.class).getBody(),
-						HttpStatus.OK);
+				ResponseEntity<PiazzaResponse> response = accessController.deleteDeployment(deploymentId);
 				logger.log(String.format("User %s successfully deleted for Deployment %s", userName, deploymentId), Severity.INFORMATIONAL,
 						new AuditElement(dn, "successDeleteDeployment", deploymentId));
 				return response;
@@ -330,9 +305,7 @@ public class DeploymentController extends PiazzaRestController {
 			logger.log(String.format("User %s requested Creation of DeploymentGroup.", createdBy), Severity.INFORMATIONAL,
 					new AuditElement(dn, "requestDeploymentGroup", ""));
 			// Broker to pz-access
-			ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(restTemplate
-					.postForEntity(String.format("%s/deployment/group?createdBy=%s", ACCESS_URL, createdBy), null, PiazzaResponse.class)
-					.getBody(), HttpStatus.CREATED);
+			ResponseEntity<PiazzaResponse> response = accessController.createDeploymentGroup(createdBy);
 			logger.log(String.format("User %s successfully created of DeploymentGroup.", createdBy), Severity.INFORMATIONAL,
 					new AuditElement(dn, "successDeploymentGroup",
 							((DeploymentGroupResponse) response.getBody()).data.deploymentGroupId));
@@ -369,11 +342,8 @@ public class DeploymentController extends PiazzaRestController {
 			String dn = gatewayUtil.getDistinguishedName(SecurityContextHolder.getContext().getAuthentication());
 			logger.log(String.format("User %s requested delete of DeploymentGroup %s", userName, deploymentGroupId), Severity.INFORMATIONAL,
 					new AuditElement(dn, "requestDeleteDeploymentGroup", deploymentGroupId));
-			// Broker to access
-			String url = String.format("%s/deployment/group/%s", ACCESS_URL, deploymentGroupId);
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(
-						restTemplate.exchange(url, HttpMethod.DELETE, null, PiazzaResponse.class).getBody(), HttpStatus.OK);
+				ResponseEntity<PiazzaResponse> response = accessController.deleteDeploymentGroup(deploymentGroupId);
 				logger.log(String.format("User %s successfully deleted DeploymentGroup %s", userName, deploymentGroupId),
 						Severity.INFORMATIONAL, new AuditElement(dn, "successDeleteDeploymentGroup", deploymentGroupId));
 				return response;

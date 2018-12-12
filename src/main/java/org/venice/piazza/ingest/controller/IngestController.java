@@ -21,7 +21,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,9 +32,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
 
 import exception.InvalidInputException;
+
+import org.venice.piazza.access.controller.AccessController;
 import org.venice.piazza.ingest.messaging.IngestThreadManager;
 import org.venice.piazza.ingest.persist.DatabaseAccessor;
 import org.venice.piazza.ingest.utility.IngestUtilities;
@@ -67,11 +67,9 @@ public class IngestController {
 	private IngestUtilities ingestUtil;
 	@Autowired
 	private ThreadPoolTaskExecutor threadPoolTaskExecutor;
-	@Autowired
-	private RestTemplate restTemplate;
 
-	@Value("${access.url}")
-	private String ACCESS_URL;
+	@Autowired
+	private AccessController accessController;
 
 	private static final Logger LOG = LoggerFactory.getLogger(IngestController.class);
 	private static final String LOADER = "Loader";
@@ -124,8 +122,7 @@ public class IngestController {
 
 	private void deleteDeploymentsByDataId(final String dataId) {
 		try {
-			String url = String.format("%s/deployment?dataId=%s", ACCESS_URL, dataId);
-			restTemplate.delete(url);
+			accessController.deleteDeploymentByData(dataId);
 		} catch (HttpClientErrorException | HttpServerErrorException httpException) {
 			// Log the error; but do not fail the request entirely if this deletion fails.
 			String error = String.format("Error requesting deletion of Deployments while deleting Data ID %s: %s", dataId,

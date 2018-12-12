@@ -24,16 +24,11 @@ import static org.powermock.api.mockito.PowerMockito.whenNew;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
-
 import model.data.DataResource;
 import model.data.type.GeoJsonDataType;
-import model.logger.Severity;
 import model.status.StatusUpdate;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -50,7 +45,6 @@ import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
 import org.venice.piazza.servicecontroller.messaging.handlers.ExecuteServiceHandler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import model.data.DataType;

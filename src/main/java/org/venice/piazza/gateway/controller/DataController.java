@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,15 +38,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.AmazonClientException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import exception.InvalidInputException;
+
+import org.venice.piazza.access.controller.AccessController;
 import org.venice.piazza.gateway.controller.util.GatewayUtil;
 import org.venice.piazza.gateway.controller.util.PiazzaRestController;
+import org.venice.piazza.ingest.controller.IngestController;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -96,8 +98,10 @@ public class DataController extends PiazzaRestController {
 	private static final String URL_FORMAT = "%s/%s/%s";
 
 	@Autowired
-	private RestTemplate restTemplate;
-
+	private AccessController accessController;
+	@Autowired
+	private IngestController ingestController;
+	
 	private final static Logger LOG = LoggerFactory.getLogger(DataController.class);
 
 	/**
@@ -142,12 +146,10 @@ public class DataController extends PiazzaRestController {
 				return new ResponseEntity<PiazzaResponse>(new ErrorResponse(validationError, GATEWAY), HttpStatus.BAD_REQUEST);
 			}
 			
-			final String url = constructURL(page, perPage, keyword, createdBy, order, sortBy, createdByJobId);
-			
 			// Proxy the request to Pz-Access
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(
-						restTemplate.getForEntity(url, DataResourceListResponse.class).getBody(), HttpStatus.OK);
+				System.out.println(createdByJobId + " " + page + " " + perPage + " " + sortBy + " " + order + " " + keyword + " " + createdBy);
+				ResponseEntity<PiazzaResponse> response =  accessController.getAllData(createdByJobId, page, perPage, sortBy, order, keyword, createdBy);
 				logger.log(String.format("User %s successfully retrieved Data List.", userName), Severity.INFORMATIONAL,
 						new AuditElement(dn, "successDataList", ""));
 				return response;
@@ -391,11 +393,8 @@ public class DataController extends PiazzaRestController {
 			String dn = gatewayUtil.getDistinguishedName(SecurityContextHolder.getContext().getAuthentication());
 			logger.log(String.format("User %s requested Resource Metadata for %s.", userName, dataId), Severity.INFORMATIONAL,
 					new AuditElement(dn, "requestGetData", dataId));
-			// Proxy the request to Pz-Access
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(restTemplate
-						.getForEntity(String.format(URL_FORMAT, ACCESS_URL, "data", dataId), DataResourceResponse.class).getBody(),
-						HttpStatus.OK);
+				ResponseEntity<PiazzaResponse> response = accessController.getData(dataId);
 				logger.log(String.format("User %s successfully got Resource Metadata for Data %s", userName, dataId),
 						Severity.INFORMATIONAL, new AuditElement(dn, "successGetData", dataId));
 				return response;
@@ -439,9 +438,7 @@ public class DataController extends PiazzaRestController {
 					new AuditElement(dn, "requestDeleteData", dataId));
 			// Proxy the request to Pz-ingest
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(restTemplate
-						.exchange(String.format(URL_FORMAT, INGEST_URL, "data", dataId), HttpMethod.DELETE, null, SuccessResponse.class)
-						.getBody(), HttpStatus.OK);
+				ResponseEntity<PiazzaResponse> response = ingestController.deleteData(dataId);
 				logger.log(String.format("User %s successfully deleted Data Id %s", userName, dataId), Severity.INFORMATIONAL,
 						new AuditElement(dn, "successDeleteData", dataId));
 				return response;
@@ -489,9 +486,7 @@ public class DataController extends PiazzaRestController {
 					new AuditElement(dn, "requestUpdateDataMetadata", dataId));
 			// Proxy the request to Ingest
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(restTemplate
-						.postForEntity(String.format(URL_FORMAT, INGEST_URL, "data", dataId), metadata, SuccessResponse.class).getBody(),
-						HttpStatus.OK);
+				ResponseEntity<PiazzaResponse> response = ingestController.updateMetadata(dataId, metadata);
 				logger.log(String.format("User %s successfully Updated of Metadata for %s.", userName, dataId), Severity.INFORMATIONAL,
 						new AuditElement(dn, "successUpdateDataMetadata", dataId));
 				return response;
@@ -546,7 +541,8 @@ public class DataController extends PiazzaRestController {
 			// Proxy the request to Ingest
 			try {
 				// Stream the bytes back
-				ResponseEntity<byte[]> response = restTemplate.getForEntity(url, byte[].class);
+				
+				ResponseEntity<byte[]> response = accessController.accessFile(dataId, fileName);
 				logger.log(String.format("User %s successfully downloaded file download for Data %s", gatewayUtil.getPrincipalName(user),
 						dataId), Severity.INFORMATIONAL, new AuditElement(dn, "successDownloadFile", dataId));
 				return response;

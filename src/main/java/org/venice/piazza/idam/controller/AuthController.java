@@ -41,7 +41,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.RedirectView;
 import org.venice.piazza.idam.authn.PiazzaAuthenticator;
 import org.venice.piazza.idam.authz.Authorizer;
@@ -85,8 +84,6 @@ public class AuthController {
 	private ThrottleAuthorizer throttleAuthorizer;
 	@Autowired
 	private EndpointAuthorizer endpointAuthorizer;
-	@Autowired
-	private RestTemplate restTemplate;
 	@Autowired(required = false)
 	private GxOAuthClient oAuthClient;
 

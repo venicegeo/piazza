@@ -49,7 +49,6 @@ import model.job.type.DescribeServiceMetadataJob;
 import model.job.type.ListServicesJob;
 import model.job.type.RegisterServiceJob;
 import model.job.type.UpdateServiceJob;
-import model.response.ServiceResponse;
 import model.service.metadata.ExecuteServiceData;
 import model.service.metadata.Service;
 import util.PiazzaLogger;

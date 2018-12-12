@@ -29,7 +29,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
 import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
 import org.venice.piazza.servicecontroller.messaging.handlers.RegisterServiceHandler;
@@ -41,8 +40,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import model.data.DataType;
 import model.data.type.URLParameterDataType;
 import model.job.metadata.ResourceMetadata;
-import model.response.ServiceResponse;
-
 import model.service.metadata.Service;
 import util.PiazzaLogger;
 import util.UUIDFactory;

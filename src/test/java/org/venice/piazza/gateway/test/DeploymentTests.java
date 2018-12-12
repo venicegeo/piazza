@@ -41,6 +41,8 @@ import org.springframework.web.client.RestTemplate;
 import com.amazonaws.services.s3.AmazonS3;
 
 import exception.PiazzaJobException;
+
+import org.venice.piazza.access.controller.AccessController;
 import org.venice.piazza.gateway.controller.DeploymentController;
 import org.venice.piazza.gateway.controller.util.GatewayUtil;
 import model.data.deployment.Deployment;
@@ -71,6 +73,8 @@ public class DeploymentTests {
 	private GatewayUtil gatewayUtil;
 	@Mock
 	private RestTemplate restTemplate;
+	@Mock
+	private AccessController accessController;
 	@Mock
 	private AmazonS3 s3Client;
 	@InjectMocks
@@ -134,11 +138,12 @@ public class DeploymentTests {
 		mockResponse.data = new ArrayList<Deployment>();
 		mockResponse.getData().add(mockDeployment);
 		mockResponse.pagination = new Pagination(new Long(1), 0, 10, "test", "asc");
-		when(restTemplate.getForEntity(anyString(), eq(DeploymentListResponse.class)))
-				.thenReturn(new ResponseEntity<DeploymentListResponse>(mockResponse, HttpStatus.OK));
+		
+		when(accessController.getAllDeployments(0, 10, "sortby", "order", "keyword"))
+			.thenReturn(new ResponseEntity<PiazzaResponse>(mockResponse, HttpStatus.OK));
 
 		// Test
-		ResponseEntity<PiazzaResponse> entity = deploymentController.getDeployment(null, 0, 10, "asc", "test", user);
+		ResponseEntity<PiazzaResponse> entity = deploymentController.getDeployment("keyword", 0, 10, "order", "sortby", user);
 		PiazzaResponse response = entity.getBody();
 
 		// Verify
@@ -147,12 +152,23 @@ public class DeploymentTests {
 		assertTrue(dataList.getData().size() == 1);
 		assertTrue(dataList.getPagination().getCount() == 1);
 		assertTrue(entity.getStatusCode().equals(HttpStatus.OK));
+	}
+	
+	/**
+	 * Test exception during GET /deployment
+	 */
+	@Test
+	public void testGetList_Error() {
+		// Mock
+		
+		when(accessController.getAllDeployments(0, 10, "sortby", "order", "keyword"))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-		// Test Exception
-		when(restTemplate.getForEntity(anyString(), eq(DeploymentListResponse.class)))
-				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-		entity = deploymentController.getDeployment(null, 0, 10, "asc", "test", user);
-		response = entity.getBody();
+		// Test
+		ResponseEntity<PiazzaResponse> entity = deploymentController.getDeployment("keyword", 0, 10, "order", "sortby", user);
+		PiazzaResponse response = entity.getBody();
+
+		// Verify
 		assertTrue(response instanceof ErrorResponse);
 		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 	}
@@ -164,8 +180,8 @@ public class DeploymentTests {
 	public void testGetMetadata() {
 		// Mock the Response
 		DeploymentResponse mockResponse = new DeploymentResponse(mockDeployment, "Now");
-		when(restTemplate.getForEntity(anyString(), eq(DeploymentResponse.class)))
-				.thenReturn(new ResponseEntity<DeploymentResponse>(mockResponse, HttpStatus.OK));
+		when(accessController.getDeployment("123456"))
+			.thenReturn(new ResponseEntity<PiazzaResponse>(mockResponse, HttpStatus.OK));
 
 		// Test
 		ResponseEntity<PiazzaResponse> entity = deploymentController.getDeployment("123456", user);
@@ -173,15 +189,24 @@ public class DeploymentTests {
 
 		// Verify
 		assertTrue(response instanceof ErrorResponse == false);
-		assertTrue(
-				((DeploymentResponse) response).data.getDeployment().getDeploymentId().equalsIgnoreCase(mockDeployment.getDeploymentId()));
+		assertTrue(((DeploymentResponse) response).data.getDeployment().getDeploymentId().equalsIgnoreCase(mockDeployment.getDeploymentId()));
 		assertTrue(entity.getStatusCode().equals(HttpStatus.OK));
+	}
+	
+	/**
+	 * Test exception during GET /deployment/{deploymentId}
+	 */
+	@Test
+	public void testGetMetadata_Error() {
+		// Mock the Response
+		when(accessController.getDeployment("123456"))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-		// Test an Exception
-		when(restTemplate.getForEntity(anyString(), eq(DeploymentResponse.class)))
-				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-		entity = deploymentController.getDeployment("123456", user);
-		response = entity.getBody();
+		// Test
+		ResponseEntity<PiazzaResponse> entity = deploymentController.getDeployment("123456", user);
+		PiazzaResponse response = entity.getBody();
+
+		// Verify
 		assertTrue(response instanceof ErrorResponse);
 		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 	}
@@ -192,21 +217,31 @@ public class DeploymentTests {
 	@Test
 	public void testDeleteDeployment() {
 		// Mock the Response
-		when(restTemplate.exchange(anyString(), any(), any(), eq(SuccessResponse.class)))
-				.thenReturn(new ResponseEntity<SuccessResponse>(new SuccessResponse("Deleted", "Access"), HttpStatus.OK));
+		when(accessController.deleteDeployment("123456"))
+			.thenReturn(new ResponseEntity<PiazzaResponse>(new SuccessResponse("Deleted", "Access"), HttpStatus.OK));
 
 		// Test
 		ResponseEntity<PiazzaResponse> entity = deploymentController.deleteDeployment("123456", user);
 
 		// Verify
+		assertTrue(entity.getStatusCode().equals(HttpStatus.OK));
 		assertTrue(entity.getBody() instanceof SuccessResponse);
+	}
+	
+	/**
+	 * Test exception during DELETE /deployment/{deploymentId}
+	 */
+	@Test
+	public void testDeleteDeployment_Error() {
+		// Mock the Response
+		when(accessController.deleteDeployment("123456"))
+			.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-		// Test an Exception
-		when(restTemplate.exchange(anyString(), any(), any(), eq(SuccessResponse.class)))
-				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-		entity = deploymentController.deleteDeployment("123456", user);
-		PiazzaResponse response = entity.getBody();
-		assertTrue(response instanceof ErrorResponse);
+		// Test
+		ResponseEntity<PiazzaResponse> entity = deploymentController.deleteDeployment("123456", user);
+
+		// Verify
+		assertTrue(entity.getBody() instanceof ErrorResponse);
 		assertTrue(entity.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 	}
 
@@ -216,8 +251,8 @@ public class DeploymentTests {
 	@Test
 	public void testDeleteDeploymentGroup() {
 		// Mock
-		Mockito.doReturn(new ResponseEntity<PiazzaResponse>(new SuccessResponse(), HttpStatus.OK)).when(restTemplate)
-				.exchange(Mockito.anyString(), Mockito.eq(HttpMethod.DELETE), Mockito.any(), Mockito.eq(PiazzaResponse.class));
+		when(accessController.deleteDeploymentGroup("123456"))
+			.thenReturn(new ResponseEntity<PiazzaResponse>(new SuccessResponse(), HttpStatus.OK));
 
 		// Test
 		ResponseEntity<PiazzaResponse> response = deploymentController.deleteDeploymentGroup("123456", user);

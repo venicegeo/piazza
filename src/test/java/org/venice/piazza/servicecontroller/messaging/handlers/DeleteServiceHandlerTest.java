@@ -40,7 +40,6 @@ import model.job.PiazzaJobType;
 import model.job.metadata.ResourceMetadata;
 import model.job.type.DeleteServiceJob;
 import model.job.type.RegisterServiceJob;
-import model.logger.Severity;
 import model.request.PiazzaJobRequest;
 import model.service.metadata.Service;
 import util.PiazzaLogger;

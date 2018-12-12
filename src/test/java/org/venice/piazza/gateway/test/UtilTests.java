@@ -33,6 +33,8 @@ import org.springframework.web.client.RestTemplate;
 import com.amazonaws.services.s3.AmazonS3;
 
 import org.venice.piazza.gateway.controller.util.GatewayUtil;
+import org.venice.piazza.jobmanager.controller.JobController;
+
 import model.job.type.AbortJob;
 import model.request.PiazzaJobRequest;
 import model.response.JobResponse;
@@ -53,6 +55,8 @@ public class UtilTests {
 	private UUIDFactory uuidFactory;
 	@Mock
 	private RestTemplate restTemplate;
+	@Mock
+	private JobController jobController;
 	@Mock
 	private AmazonS3 s3Client;
 
@@ -85,9 +89,9 @@ public class UtilTests {
 		PiazzaJobRequest mockRequest = new PiazzaJobRequest();
 		mockRequest.createdBy = "tester";
 		mockRequest.jobType = new AbortJob("123456");
-		Mockito.doReturn(new ResponseEntity<PiazzaResponse>(new JobResponse("123456"), HttpStatus.OK)).when(restTemplate)
-				.postForEntity(Mockito.anyString(), Mockito.any(), Mockito.eq(PiazzaResponse.class));
-
+		Mockito.doReturn(new ResponseEntity<PiazzaResponse>(new JobResponse("123456"), HttpStatus.OK)).when(jobController)
+				.requestJob(Mockito.eq(mockRequest), Mockito.eq("123456"));
+				
 		// Test
 		String jobId = gatewayUtil.sendJobRequest(mockRequest, "123456");
 

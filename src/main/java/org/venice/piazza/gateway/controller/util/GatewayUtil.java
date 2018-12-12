@@ -30,7 +30,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.AmazonClientException;
@@ -48,6 +47,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import exception.PiazzaJobException;
 import org.venice.piazza.gateway.auth.PiazzaAuthenticationToken;
+import org.venice.piazza.jobmanager.controller.JobController;
+
 import model.data.FileRepresentation;
 import model.data.location.FileLocation;
 import model.data.location.S3FileStore;
@@ -77,7 +78,7 @@ public class GatewayUtil {
 	@Autowired
 	private PiazzaLogger logger;
 	@Autowired
-	private RestTemplate restTemplate;
+	private JobController jobController;
 
 	@Value("${s3.domain}")
 	private String AMAZONS3_DOMAIN;
@@ -142,8 +143,7 @@ public class GatewayUtil {
 					String.format("Forwarding Job %s for user %s with Type %s", finalJobId, request.createdBy,
 							request.jobType.getClass().getSimpleName()),
 					Severity.INFORMATIONAL, new AuditElement(request.createdBy, "requestJob", finalJobId));
-			ResponseEntity<PiazzaResponse> jobResponse = restTemplate
-					.postForEntity(String.format("%s/%s?jobId=%s", JOBMANAGER_URL, "requestJob", finalJobId), entity, PiazzaResponse.class);
+			ResponseEntity<PiazzaResponse> jobResponse = jobController.requestJob(request, finalJobId);
 			// Check if the response was an error.
 			if (jobResponse.getBody() instanceof ErrorResponse) {
 				throw new PiazzaJobException(((ErrorResponse) jobResponse.getBody()).message);

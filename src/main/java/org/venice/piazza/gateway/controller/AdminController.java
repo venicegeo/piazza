@@ -27,9 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,10 +38,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
 
 import org.venice.piazza.gateway.controller.util.GatewayUtil;
 import org.venice.piazza.gateway.controller.util.PiazzaRestController;
+import org.venice.piazza.idam.controller.AuthController;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -88,8 +87,11 @@ public class AdminController extends PiazzaRestController {
 	@Value("${release.url}")
 	private String RELEASE_URL;
 
+
 	@Autowired
-	private RestTemplate restTemplate;
+	private AuthController idamAuthController;
+	@Autowired
+	private org.venice.piazza.idam.controller.AdminController idamAdminController;
 
 	private static final Logger LOG = LoggerFactory.getLogger(AdminController.class);
 
@@ -115,33 +117,16 @@ public class AdminController extends PiazzaRestController {
 	 */
 	@ApiOperation(hidden = true, value = "Version")
 	@RequestMapping(value = "/version", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity getVersion() {
+	public ResponseEntity<?> getVersion() {
 		try {
-			// Check for local file
-			InputStream templateStream = null;
-			String localVersionJson = null;
-			try {
-				templateStream = getClass().getClassLoader().getResourceAsStream("pz-release.json");
-				localVersionJson = IOUtils.toString(templateStream);
-				return new ResponseEntity<String>(localVersionJson, HttpStatus.OK);
-			} catch (Exception exception) {
-				LOG.info("Could not find local version. Delegating to pz-release endpoint.", exception);
-			} finally {
-				try {
-					if (templateStream != null) {
-						templateStream.close();
-					}
-				} catch (Exception exception) {
-					LOG.error("Error closing Local Version Number Input Stream.", exception);
-				}
-			}
-
-			LOG.info("Returning release information from pz-release endpoint.");
-			return new ResponseEntity<String>(restTemplate.getForObject(RELEASE_URL, String.class), HttpStatus.OK);
-		} catch (Exception e) {
-			String error = String.format("Error retrieving version for Piazza: %s", e.getMessage());
-			LOG.error(error, e);
-			return new ResponseEntity<PiazzaResponse>(new ErrorResponse(error, GATEWAY), HttpStatus.INTERNAL_SERVER_ERROR);
+			InputStream templateStream = getClass().getClassLoader().getResourceAsStream("pz-release.json");
+			String localVersionJson = IOUtils.toString(templateStream);
+			return new ResponseEntity<String>(localVersionJson, HttpStatus.OK);
+		} catch (Exception exception) {
+			String error = String.format("Error retrieving version for Piazza: %s", exception.getMessage());
+			LOG.error(error, exception);
+			return new ResponseEntity<PiazzaResponse>(new ErrorResponse(error, GATEWAY),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -206,8 +191,7 @@ public class AdminController extends PiazzaRestController {
 			HttpHeaders headers = new HttpHeaders();
 			headers.set(AUTHORIZATION, request.getHeader(AUTHORIZATION));
 			try {
-				return new ResponseEntity<PiazzaResponse>(restTemplate.exchange(SECURITY_URL + "/v2/key", HttpMethod.GET,
-						new HttpEntity<String>("parameters", headers), UUIDResponse.class).getBody(), HttpStatus.OK);
+				return idamAuthController.generateApiKeyV2();
 			} catch (HttpClientErrorException | HttpServerErrorException hee) {
 				LOG.error(hee.getResponseBodyAsString(), hee);
 				return new ResponseEntity<PiazzaResponse>(gatewayUtil.getErrorResponse(hee.getResponseBodyAsString()), hee.getStatusCode());
@@ -239,9 +223,7 @@ public class AdminController extends PiazzaRestController {
 					new AuditElement(dn, "requestUserProfile", username));
 			// Broker to IDAM
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(restTemplate
-						.getForEntity(String.format("%s/%s/%s.json", SECURITY_URL, "profile", username), UserProfileResponse.class)
-						.getBody(), HttpStatus.OK);
+				ResponseEntity<PiazzaResponse> response = idamAdminController.getUserProfile(username);
 				logger.log(String.format("User %s successfully retrieved User Profile.", username), Severity.INFORMATIONAL,
 						new AuditElement(dn, "successUserProfile", username));
 				return response;
@@ -267,8 +249,7 @@ public class AdminController extends PiazzaRestController {
 			HttpHeaders headers = new HttpHeaders();
 			headers.set(AUTHORIZATION, request.getHeader(AUTHORIZATION));
 			try {
-				return new ResponseEntity<PiazzaResponse>(restTemplate.exchange(SECURITY_URL + "/v2/key", HttpMethod.POST,
-						new HttpEntity<String>("parameters", headers), UUIDResponse.class).getBody(), HttpStatus.CREATED);
+				return idamAuthController.generateApiKeyV2();
 			} catch (HttpClientErrorException | HttpServerErrorException hee) {
 				LOG.error(hee.getResponseBodyAsString(), hee);
 				return new ResponseEntity<PiazzaResponse>(gatewayUtil.getErrorResponse(hee.getResponseBodyAsString()), hee.getStatusCode());

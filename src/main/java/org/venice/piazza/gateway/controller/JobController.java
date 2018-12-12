@@ -25,8 +25,6 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +39,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -88,7 +85,7 @@ public class JobController extends PiazzaRestController {
 	@Autowired
 	private ServiceController serviceController;
 	@Autowired
-	private RestTemplate restTemplate;
+	private org.venice.piazza.jobmanager.controller.JobController jobManagerController;
 	@Autowired
 	private RabbitTemplate rabbitTemplate;
 	@Autowired
@@ -132,9 +129,7 @@ public class JobController extends PiazzaRestController {
 					new AuditElement(dn, "requestFetchJob", jobId));
 			// Proxy the request to the Job Manager
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(restTemplate
-						.getForEntity(String.format("%s/%s/%s", JOBMANAGER_URL, "job", jobId), JobStatusResponse.class).getBody(),
-						HttpStatus.OK);
+				ResponseEntity<PiazzaResponse> response = jobManagerController.getJobStatus(jobId);
 				logger.log(String.format("User %s fetched Job Status for %s.", userName, jobId), Severity.INFORMATIONAL,
 						new AuditElement(dn, "completeFetchJob", jobId));
 				return response;
@@ -185,15 +180,8 @@ public class JobController extends PiazzaRestController {
 			request.createdBy = userName;
 			request.jobType = new AbortJob(jobId, reason);
 
-			// Proxy the request to the Job Manager, where the Job Table will be
-			// updated.
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			HttpEntity<PiazzaJobRequest> entity = new HttpEntity<PiazzaJobRequest>(request, headers);
 			try {
-				response = new ResponseEntity<PiazzaResponse>(restTemplate
-						.postForEntity(String.format("%s/%s", JOBMANAGER_URL, "abort"), entity, SuccessResponse.class).getBody(),
-						HttpStatus.OK);
+				response = jobManagerController.abortJob(request);
 				// Send the message through the Event Bus to abort the job.
 				rabbitTemplate.convertAndSend(JobMessageFactory.PIAZZA_EXCHANGE_NAME, abortJobsQueue.getName(),
 						mapper.writeValueAsString(request));
@@ -246,14 +234,8 @@ public class JobController extends PiazzaRestController {
 			PiazzaJobRequest request = new PiazzaJobRequest();
 			request.createdBy = gatewayUtil.getPrincipalName(user);
 			request.jobType = new RepeatJob(jobId);
-			// Proxy the request to the Job Manager
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			HttpEntity<PiazzaJobRequest> entity = new HttpEntity<PiazzaJobRequest>(request, headers);
 			try {
-				ResponseEntity<PiazzaResponse> response = new ResponseEntity<PiazzaResponse>(
-						restTemplate.postForEntity(String.format("%s/%s", JOBMANAGER_URL, "repeat"), entity, JobResponse.class).getBody(),
-						HttpStatus.CREATED);
+				ResponseEntity<PiazzaResponse> response = jobManagerController.repeatJob(request);
 				logger.log(String.format("User %s Repeated Job %s", userName, jobId), Severity.INFORMATIONAL,
 						new AuditElement(dn, "completeRepeatJob", jobId));
 				return response;
