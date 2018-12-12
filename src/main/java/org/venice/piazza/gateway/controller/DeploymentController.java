@@ -73,8 +73,6 @@ public class DeploymentController extends PiazzaRestController {
 	private GatewayUtil gatewayUtil;
 	@Autowired
 	private PiazzaLogger logger;
-	@Value("${access.url}")
-	private String ACCESS_URL;
 	@Value("${SPACE}")
 	private String SPACE;
 
@@ -344,7 +342,6 @@ public class DeploymentController extends PiazzaRestController {
 			String dn = gatewayUtil.getDistinguishedName(SecurityContextHolder.getContext().getAuthentication());
 			logger.log(String.format("User %s requested delete of DeploymentGroup %s", userName, deploymentGroupId), Severity.INFORMATIONAL,
 					new AuditElement(dn, "requestDeleteDeploymentGroup", deploymentGroupId));
-			String.format("%s/deployment/group/%s", ACCESS_URL, deploymentGroupId);
 			try {
 				ResponseEntity<PiazzaResponse> response = accessController.deleteDeploymentGroup(deploymentGroupId);
 				logger.log(String.format("User %s successfully deleted DeploymentGroup %s", userName, deploymentGroupId),
