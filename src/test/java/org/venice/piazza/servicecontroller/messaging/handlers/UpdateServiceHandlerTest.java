@@ -32,7 +32,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
+import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 import org.venice.piazza.servicecontroller.util.CoreServiceProperties;
 
 import model.job.PiazzaJobType;
@@ -49,7 +49,7 @@ public class UpdateServiceHandlerTest {
 	
 	// Create some mocks
 	@Mock
-	private DatabaseAccessor accessorMock;
+	private ServiceControllerDatabaseAccessor accessorMock;
 	
 	@Mock
 	private CoreServiceProperties coreServicePropMock;

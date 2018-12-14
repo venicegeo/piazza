@@ -83,7 +83,7 @@ public class ServiceController extends PiazzaRestController {
 	private PiazzaLogger logger;
 
 	@Autowired
-	private org.venice.piazza.servicecontroller.controller.ServiceController serviceControllerController;
+	private org.venice.piazza.servicecontroller.controller.ServiceControllerController serviceControllerController;
 	@Autowired
 	private TaskManagedController taskManagedController;
 	

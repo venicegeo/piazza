@@ -34,7 +34,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
+import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 import org.venice.piazza.servicecontroller.messaging.handlers.DescribeServiceHandler;
 import org.venice.piazza.servicecontroller.messaging.handlers.ExecuteServiceHandler;
 import org.venice.piazza.servicecontroller.messaging.handlers.ListServiceHandler;
@@ -72,7 +72,7 @@ public class HandlerLoggingTest {
 	ResourceMetadata rm = null;
 	Service service = null;
 	RestTemplate template = null;
-	DatabaseAccessor accessor = null;
+	ServiceControllerDatabaseAccessor accessor = null;
 	PiazzaLogger logger = null;
 	CoreServiceProperties props = null;
 
@@ -94,7 +94,7 @@ public class HandlerLoggingTest {
 		service.setServiceId("8");
 		service.setUrl("http://localhost:8085/string/toUpper");
 
-		accessor = mock(DatabaseAccessor.class);
+		accessor = mock(ServiceControllerDatabaseAccessor.class);
 		when(accessor.save(service)).thenReturn("8");
 		when(accessor.getServiceById("8")).thenReturn(service);
 		logger = mock(PiazzaLogger.class);

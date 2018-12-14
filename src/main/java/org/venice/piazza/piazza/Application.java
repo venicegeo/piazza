@@ -89,7 +89,7 @@ import org.venice.piazza.gateway.auth.PiazzaBasicAuthenticationEntryPoint;
 import org.venice.piazza.gateway.auth.PiazzaBasicAuthenticationProvider;
 import org.venice.piazza.idam.authn.GxAuthenticator;
 import org.venice.piazza.idam.authn.PiazzaAuthenticator;
-import org.venice.piazza.jobmanager.database.DatabaseAccessor;
+import org.venice.piazza.jobmanager.database.JobManagerDatabaseAccessor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import io.swagger.annotations.Api;
@@ -148,7 +148,7 @@ public class Application extends SpringBootServletInitializer implements AsyncCo
 	@Value("${SPACE}")
 	private String SPACE;
 
-	private static final Logger LOG = LoggerFactory.getLogger(DatabaseAccessor.class);
+	private static final Logger LOG = LoggerFactory.getLogger(JobManagerDatabaseAccessor.class);
 
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {

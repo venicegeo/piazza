@@ -28,7 +28,7 @@ import org.venice.piazza.ingest.inspect.PointCloudInspector;
 import org.venice.piazza.ingest.inspect.ShapefileInspector;
 import org.venice.piazza.ingest.inspect.TextInspector;
 import org.venice.piazza.ingest.inspect.WfsInspector;
-import org.venice.piazza.ingest.persist.DatabaseAccessor;
+import org.venice.piazza.ingest.persist.IngestDatabaseAccessor;
 import model.data.DataResource;
 import model.data.type.TextDataType;
 
@@ -40,7 +40,7 @@ import model.data.type.TextDataType;
  */
 public class InspectorTests {
 	@Mock
-	private DatabaseAccessor databaseAccessor;
+	private IngestDatabaseAccessor databaseAccessor;
 	@Mock
 	private ShapefileInspector shapefileInspector;
 	@Mock

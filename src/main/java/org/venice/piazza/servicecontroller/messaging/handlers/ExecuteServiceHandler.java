@@ -39,7 +39,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
+import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,7 +73,7 @@ import util.UUIDFactory;
 @Component
 public class ExecuteServiceHandler implements PiazzaJobHandler {
 	@Autowired
-	private DatabaseAccessor accessor;
+	private ServiceControllerDatabaseAccessor accessor;
 	@Autowired
 	private PiazzaLogger logger;
 	@Autowired

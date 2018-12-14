@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import exception.InvalidInputException;
-import org.venice.piazza.jobmanager.database.DatabaseAccessor;
+import org.venice.piazza.jobmanager.database.JobManagerDatabaseAccessor;
 import org.venice.piazza.jobmanager.messaging.handler.AbortJobHandler;
 import org.venice.piazza.jobmanager.messaging.handler.RepeatJobHandler;
 import org.venice.piazza.jobmanager.messaging.handler.RequestJobHandler;
@@ -57,13 +57,13 @@ import util.PiazzaLogger;
 import util.UUIDFactory;
 
 @RestController
-public class JobController {
+public class JobManagerController {
 	@Autowired
 	private PiazzaLogger logger;
 	@Autowired
 	private UUIDFactory uuidFactory;
 	@Autowired
-	private DatabaseAccessor accessor;
+	private JobManagerDatabaseAccessor accessor;
 	@Autowired
 	private AbortJobHandler abortJobHandler;
 	@Autowired
@@ -78,7 +78,7 @@ public class JobController {
 	private static final String DEFAULT_PAGE_SIZE = "10";
 	private static final String DEFAULT_PAGE = "0";
 
-	private static final Logger LOG = LoggerFactory.getLogger(JobController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(JobManagerController.class);
 	private static final String ERROR_MSG = "Job not found: %s";
 	private static final String JOB_MGR_UPPER = "Job Manager";
 	private static final String JOB_MGR_LOWER = "jobmanager";

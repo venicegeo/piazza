@@ -22,7 +22,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
+import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 import org.venice.piazza.servicecontroller.util.CoreServiceProperties;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -41,7 +41,7 @@ public class ServiceMessageThreadManagerTest {
 	@Mock
 	private PiazzaLogger loggerMock;
 	@Mock
-	private DatabaseAccessor accessorMock;
+	private ServiceControllerDatabaseAccessor accessorMock;
 	@Mock
 	private Service serviceMock;
 	@Mock

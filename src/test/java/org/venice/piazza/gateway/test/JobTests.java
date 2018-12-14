@@ -88,7 +88,7 @@ public class JobTests {
 	@Mock
 	private ServiceController serviceController;
 	@Mock
-	private org.venice.piazza.jobmanager.controller.JobController jobManagerController;
+	private org.venice.piazza.jobmanager.controller.JobManagerController jobManagerController;
 	@InjectMocks
 	private JobController jobController;
 

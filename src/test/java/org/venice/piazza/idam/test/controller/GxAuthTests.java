@@ -46,7 +46,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import org.venice.piazza.idam.authn.GxAuthenticator;
 import org.venice.piazza.idam.authn.PiazzaAuthenticator;
-import org.venice.piazza.idam.data.DatabaseAccessor;
+import org.venice.piazza.idam.data.IDAMDatabaseAccessor;
 import org.venice.piazza.idam.model.*;
 import org.venice.piazza.idam.util.GxUserProfileClient;
 import util.PiazzaLogger;
@@ -74,7 +74,7 @@ public class GxAuthTests {
     @Mock
     private RestTemplate restTemplate;
     @Mock
-    private DatabaseAccessor accessor;
+    private IDAMDatabaseAccessor accessor;
     @Mock
     private PiazzaLogger logger;
     @Mock

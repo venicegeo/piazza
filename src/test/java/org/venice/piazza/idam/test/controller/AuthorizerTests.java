@@ -24,7 +24,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.venice.piazza.idam.authz.throttle.ThrottleAuthorizer;
-import org.venice.piazza.idam.data.DatabaseAccessor;
+import org.venice.piazza.idam.data.IDAMDatabaseAccessor;
 
 import model.response.AuthResponse;
 import model.security.authz.AuthorizationCheck;
@@ -39,7 +39,7 @@ import util.PiazzaLogger;
  */
 public class AuthorizerTests {
 	@Mock
-	private DatabaseAccessor accessor;
+	private IDAMDatabaseAccessor accessor;
 	@Mock
 	private PiazzaLogger pzLogger;
 	@InjectMocks

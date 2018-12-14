@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 
 import exception.DataInspectException;
 import exception.InvalidInputException;
-import org.venice.piazza.ingest.persist.DatabaseAccessor;
+import org.venice.piazza.ingest.persist.IngestDatabaseAccessor;
 import model.data.DataResource;
 import model.data.DataType;
 import model.data.type.GeoJsonDataType;
@@ -41,7 +41,7 @@ import model.data.type.WfsDataType;
 @Component
 public class Inspector {
 	@Autowired
-	private DatabaseAccessor accessor;
+	private IngestDatabaseAccessor accessor;
 	
 	@Autowired
 	private ShapefileInspector shapefileInspector;

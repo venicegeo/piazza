@@ -37,7 +37,7 @@ import org.venice.piazza.common.hibernate.dao.UserThrottlesDao;
 import org.venice.piazza.common.hibernate.entity.ApiKeyEntity;
 import org.venice.piazza.common.hibernate.entity.UserProfileEntity;
 import org.venice.piazza.common.hibernate.entity.UserThrottlesEntity;
-import org.venice.piazza.idam.data.DatabaseAccessor;
+import org.venice.piazza.idam.data.IDAMDatabaseAccessor;
 
 import exception.InvalidInputException;
 import model.security.ApiKey;
@@ -70,7 +70,7 @@ public class DatabaseAccessorTests {
 
 	@Spy
 	@InjectMocks
-	private DatabaseAccessor accessor;
+	private IDAMDatabaseAccessor accessor;
 
 	/**
 	 * Initialize mock objects.

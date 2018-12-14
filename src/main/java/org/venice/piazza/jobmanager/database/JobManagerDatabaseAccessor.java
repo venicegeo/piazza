@@ -38,11 +38,11 @@ import model.status.StatusUpdate;
  * 
  */
 @Component
-public class DatabaseAccessor {
+public class JobManagerDatabaseAccessor {
 	@Autowired
 	private JobDao jobDao;
 
-	public DatabaseAccessor() {
+	public JobManagerDatabaseAccessor() {
 		// Expected for Component instantiation
 	}
 

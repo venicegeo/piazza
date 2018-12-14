@@ -17,6 +17,7 @@ package org.venice.piazza.access.controller;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -521,9 +522,10 @@ public class AccessController {
 	 * @param data
 	 *            DataResource object
 	 * @return stringbuilder of geojson
+	 * @throws URISyntaxException 
 	 * @throws Exception
 	 */
-	private StringBuilder getPostGISGeoJSON(DataResource data) throws IOException {
+	private StringBuilder getPostGISGeoJSON(DataResource data) throws IOException, URISyntaxException {
 		// Connect to POSTGIS and gather geoJSON info
 		DataStore postGisStore = accessor.getPostGisDataStore();
 

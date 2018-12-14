@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.venice.piazza.idam.data.DatabaseAccessor;
+import org.venice.piazza.idam.data.IDAMDatabaseAccessor;
 
 import model.logger.AuditElement;
 import model.logger.Severity;
@@ -45,15 +45,15 @@ import util.PiazzaLogger;
  * @author Russell.Orf, Patrick.Doody
  */
 @RestController
-public class AdminController {
+public class IDAMAdminController {
 	@Autowired
 	private PiazzaLogger pzLogger;
 	@Autowired
 	private Environment env;
 	@Autowired
-	private DatabaseAccessor accessor;
+	private IDAMDatabaseAccessor accessor;
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(AdminController.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(IDAMAdminController.class);
 
 	/**
 	 * Healthcheck required for all Piazza Core Services

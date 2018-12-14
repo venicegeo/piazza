@@ -35,7 +35,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
+import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 import org.venice.piazza.servicecontroller.messaging.handlers.DeleteServiceHandler;
 import org.venice.piazza.servicecontroller.messaging.handlers.DescribeServiceHandler;
 import org.venice.piazza.servicecontroller.messaging.handlers.ExecuteServiceHandler;
@@ -90,7 +90,7 @@ public class ServiceMessageWorkerTest {
 	@Mock
 	private ObjectMapper omMock;
 	@Mock
-	private DatabaseAccessor accessorMock;
+	private ServiceControllerDatabaseAccessor accessorMock;
 	@Mock
 	@Qualifier("UpdateJobsQueue")
 	private Queue updateJobsQueue;

@@ -1,6 +1,6 @@
 package org.venice.piazza.jobmanager.test;
 
-import org.venice.piazza.jobmanager.database.DatabaseAccessor;
+import org.venice.piazza.jobmanager.database.JobManagerDatabaseAccessor;
 import model.job.Job;
 import model.job.JobProgress;
 import model.job.result.ResultType;
@@ -25,7 +25,7 @@ public class AccessorTests {
     @Mock
     private JobDao jobDao;
     @InjectMocks
-    private DatabaseAccessor databaseAccessor;
+    private JobManagerDatabaseAccessor databaseAccessor;
 
 
     @Before

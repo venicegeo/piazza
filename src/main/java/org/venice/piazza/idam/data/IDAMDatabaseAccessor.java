@@ -38,13 +38,13 @@ import model.security.authz.UserThrottles;
 import util.PiazzaLogger;
 
 @Component
-public class DatabaseAccessor {
+public class IDAMDatabaseAccessor {
 	@Value("${key.expiration.time.ms}")
 	private long KEY_EXPIRATION_DURATION_MS;
 	@Value("${key.inactivity.threshold.ms}")
 	private long KEY_INACTIVITY_THESHOLD_MS;
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseAccessor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(IDAMDatabaseAccessor.class);
 
 	@Autowired
 	private UserProfileDao userProfileDao;

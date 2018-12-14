@@ -77,7 +77,7 @@ public class ServiceTests {
 	@Mock
 	private RestTemplate restTemplate;
 	@Mock
-	private org.venice.piazza.servicecontroller.controller.ServiceController serviceControllerController;
+	private org.venice.piazza.servicecontroller.controller.ServiceControllerController serviceControllerController;
 	@Mock
 	private TaskManagedController taskManagedController;
 	@InjectMocks

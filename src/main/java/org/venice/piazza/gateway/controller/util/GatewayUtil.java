@@ -47,7 +47,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import exception.PiazzaJobException;
 import org.venice.piazza.gateway.auth.PiazzaAuthenticationToken;
-import org.venice.piazza.jobmanager.controller.JobController;
+import org.venice.piazza.jobmanager.controller.JobManagerController;
 
 import model.data.FileRepresentation;
 import model.data.location.FileLocation;
@@ -78,7 +78,7 @@ public class GatewayUtil {
 	@Autowired
 	private PiazzaLogger logger;
 	@Autowired
-	private JobController jobController;
+	private JobManagerController jobController;
 
 	@Value("${s3.domain}")
 	private String AMAZONS3_DOMAIN;

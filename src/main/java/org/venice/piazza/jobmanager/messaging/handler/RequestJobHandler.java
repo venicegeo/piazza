@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.venice.piazza.jobmanager.database.DatabaseAccessor;
+import org.venice.piazza.jobmanager.database.JobManagerDatabaseAccessor;
 import messaging.job.JobMessageFactory;
 import model.job.Job;
 import model.logger.AuditElement;
@@ -49,7 +49,7 @@ public class RequestJobHandler {
 	@Autowired
 	private UUIDFactory uuidFactory;
 	@Autowired
-	private DatabaseAccessor accessor;
+	private JobManagerDatabaseAccessor accessor;
 	@Value("${SPACE}")
 	private String space;
 	@Value("${logger.console.job.payloads:false}")

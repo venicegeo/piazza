@@ -34,7 +34,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
-import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
+import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 import org.venice.piazza.servicecontroller.taskmanaged.ServiceTaskManager;
 import util.PiazzaLogger;
 
@@ -53,11 +53,11 @@ public class TaskManagedController {
     @Autowired
     private ServiceTaskManager serviceTaskManager;
     @Autowired
-    private DatabaseAccessor accessor;
+    private ServiceControllerDatabaseAccessor accessor;
 
     private static final String NO_ACCESS_MSG = "Service does not allow this user to access.";
     private static final String SERVICE_CONTROLLER = "ServiceController";
-    private static final Logger LOG = LoggerFactory.getLogger(ServiceController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ServiceControllerController.class);
 
     /**
      * Pulls the next job off of the Service Queue.

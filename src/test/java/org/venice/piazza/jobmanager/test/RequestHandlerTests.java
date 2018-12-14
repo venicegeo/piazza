@@ -26,7 +26,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
-import org.venice.piazza.jobmanager.database.DatabaseAccessor;
+import org.venice.piazza.jobmanager.database.JobManagerDatabaseAccessor;
 import org.venice.piazza.jobmanager.messaging.handler.RequestJobHandler;
 import model.job.type.RepeatJob;
 import model.request.PiazzaJobRequest;
@@ -44,7 +44,7 @@ public class RequestHandlerTests {
 	@Mock
 	private PiazzaLogger logger;
 	@Mock
-	private DatabaseAccessor accessor;
+	private JobManagerDatabaseAccessor accessor;
 	@Mock
 	private UUIDFactory uuidFactory;
 	@Mock

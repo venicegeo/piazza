@@ -33,7 +33,7 @@ import org.springframework.web.client.RestTemplate;
 import com.amazonaws.services.s3.AmazonS3;
 
 import org.venice.piazza.gateway.controller.util.GatewayUtil;
-import org.venice.piazza.jobmanager.controller.JobController;
+import org.venice.piazza.jobmanager.controller.JobManagerController;
 
 import model.job.type.AbortJob;
 import model.request.PiazzaJobRequest;
@@ -56,7 +56,7 @@ public class UtilTests {
 	@Mock
 	private RestTemplate restTemplate;
 	@Mock
-	private JobController jobController;
+	private JobManagerController jobController;
 	@Mock
 	private AmazonS3 s3Client;
 

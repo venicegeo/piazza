@@ -85,7 +85,7 @@ public class JobController extends PiazzaRestController {
 	@Autowired
 	private ServiceController serviceController;
 	@Autowired
-	private org.venice.piazza.jobmanager.controller.JobController jobManagerController;
+	private org.venice.piazza.jobmanager.controller.JobManagerController jobManagerController;
 	@Autowired
 	private RabbitTemplate rabbitTemplate;
 	@Autowired

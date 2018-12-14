@@ -39,8 +39,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import exception.PiazzaJobException;
-import org.venice.piazza.jobmanager.controller.JobController;
-import org.venice.piazza.jobmanager.database.DatabaseAccessor;
+import org.venice.piazza.jobmanager.controller.JobManagerController;
+import org.venice.piazza.jobmanager.database.JobManagerDatabaseAccessor;
 import org.venice.piazza.jobmanager.messaging.handler.AbortJobHandler;
 import org.venice.piazza.jobmanager.messaging.handler.RepeatJobHandler;
 import org.venice.piazza.jobmanager.messaging.handler.RequestJobHandler;
@@ -71,7 +71,7 @@ public class JobControllerTests {
     @Mock
     private UUIDFactory uuidFactory;
     @Mock
-    private DatabaseAccessor accessor;
+    private JobManagerDatabaseAccessor accessor;
     @Mock
     private AbortJobHandler abortJobHandler;
     @Mock
@@ -81,7 +81,7 @@ public class JobControllerTests {
     @Mock
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
     @InjectMocks
-    private JobController jobController;
+    private JobManagerController jobController;
 
     private Job mockJob;
     private List<Job> mockJobs;

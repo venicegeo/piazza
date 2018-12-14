@@ -26,7 +26,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.venice.piazza.idam.data.DatabaseAccessor;
+import org.venice.piazza.idam.data.IDAMDatabaseAccessor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -48,7 +48,7 @@ public class JobConsumer {
 	@Autowired
 	private PiazzaLogger pzLogger;
 	@Autowired
-	private DatabaseAccessor accessor;
+	private IDAMDatabaseAccessor accessor;
 	@Value("${SPACE}")
 	private String space;
 

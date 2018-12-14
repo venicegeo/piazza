@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 
 import exception.PiazzaJobException;
-import org.venice.piazza.jobmanager.database.DatabaseAccessor;
+import org.venice.piazza.jobmanager.database.JobManagerDatabaseAccessor;
 import model.job.Job;
 import model.job.type.AbortJob;
 import model.logger.AuditElement;
@@ -42,7 +42,7 @@ public class AbortJobHandler {
 	@Autowired
 	private PiazzaLogger logger;
 	@Autowired
-	private DatabaseAccessor accessor;
+	private JobManagerDatabaseAccessor accessor;
 
 	private static final Logger LOG = LoggerFactory.getLogger(AbortJobHandler.class);
 

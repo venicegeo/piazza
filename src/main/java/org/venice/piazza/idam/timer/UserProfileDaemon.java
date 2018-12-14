@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.venice.piazza.idam.data.DatabaseAccessor;
+import org.venice.piazza.idam.data.IDAMDatabaseAccessor;
 import org.venice.piazza.idam.util.GxUserProfileClient;
 
 import exception.InvalidInputException;
@@ -40,7 +40,7 @@ public class UserProfileDaemon {
 	@Autowired
 	private PiazzaLogger logger;
 	@Autowired
-	private DatabaseAccessor accessor;
+	private IDAMDatabaseAccessor accessor;
 	@Autowired
 	private GxUserProfileClient gxUserProfileClient;
 	

@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import org.venice.piazza.idam.data.DatabaseAccessor;
+import org.venice.piazza.idam.data.IDAMDatabaseAccessor;
 import org.venice.piazza.idam.model.GxAuthNCertificateRequest;
 import org.venice.piazza.idam.model.GxAuthNResponse;
 import org.venice.piazza.idam.model.GxAuthNUserPassRequest;
@@ -64,7 +64,7 @@ public class GxAuthenticator implements PiazzaAuthenticator {
 	@Autowired
 	private RestTemplate restTemplate;
 	@Autowired
-	private DatabaseAccessor accessor;
+	private IDAMDatabaseAccessor accessor;
 	
 	private static final String USER_FAILED_AUTH = "userFailedAuthentication";
 

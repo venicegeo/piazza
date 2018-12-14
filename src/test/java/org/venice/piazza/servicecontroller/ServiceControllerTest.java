@@ -40,8 +40,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.client.ResourceAccessException;
-import org.venice.piazza.servicecontroller.controller.ServiceController;
-import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
+import org.venice.piazza.servicecontroller.controller.ServiceControllerController;
+import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 import org.venice.piazza.servicecontroller.messaging.handlers.DeleteServiceHandler;
 import org.venice.piazza.servicecontroller.messaging.handlers.DescribeServiceHandler;
 import org.venice.piazza.servicecontroller.messaging.handlers.ExecuteServiceHandler;
@@ -72,7 +72,7 @@ public class ServiceControllerTest {
 	Service service = null;
 	
 	@InjectMocks
-    private ServiceController sc;
+    private ServiceControllerController sc;
 	@Mock
 	private RegisterServiceHandler rsHandlerMock;
 	@Mock
@@ -86,7 +86,7 @@ public class ServiceControllerTest {
 	@Mock
 	private DeleteServiceHandler dlHandlerMock;
 	@Mock
-	private DatabaseAccessor accessorMock;
+	private ServiceControllerDatabaseAccessor accessorMock;
 	@Mock
 	private CoreServiceProperties coreServicePropMock;
 	@Mock 
@@ -117,7 +117,7 @@ public class ServiceControllerTest {
 	 *  Testing initialization.  This should make sure that nothing crashes
 	 */
 	public void testInit() {
-		ServiceController sc = new ServiceController();
+		ServiceControllerController sc = new ServiceControllerController();
 		// Should check to make sure each of the handlers are not null
 		//sc.initialize();
 	}

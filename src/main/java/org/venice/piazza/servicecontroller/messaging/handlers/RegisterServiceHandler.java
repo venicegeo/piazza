@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
+import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 import org.venice.piazza.servicecontroller.taskmanaged.ServiceTaskManager;
 
 import model.job.PiazzaJobType;
@@ -43,7 +43,7 @@ import util.UUIDFactory;
 @Component
 public class RegisterServiceHandler implements PiazzaJobHandler {
 	@Autowired
-	private DatabaseAccessor accessor;
+	private ServiceControllerDatabaseAccessor accessor;
 	@Autowired
 	private PiazzaLogger coreLogger;
 	@Autowired

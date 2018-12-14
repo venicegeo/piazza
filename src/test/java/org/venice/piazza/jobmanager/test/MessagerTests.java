@@ -29,7 +29,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.venice.piazza.jobmanager.database.DatabaseAccessor;
+import org.venice.piazza.jobmanager.database.JobManagerDatabaseAccessor;
 import org.venice.piazza.jobmanager.messaging.JobMessager;
 import org.venice.piazza.jobmanager.messaging.handler.AbortJobHandler;
 import org.venice.piazza.jobmanager.messaging.handler.RepeatJobHandler;
@@ -55,7 +55,7 @@ public class MessagerTests {
 	@Mock
 	private UUIDFactory uuidFactory;
 	@Mock
-	private DatabaseAccessor accessor;
+	private JobManagerDatabaseAccessor accessor;
 	@Mock
 	private AbortJobHandler abortJobHandler;
 	@Mock

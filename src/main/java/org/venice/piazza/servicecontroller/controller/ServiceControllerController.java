@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.ResourceAccessException;
-import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
+import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 import org.venice.piazza.servicecontroller.messaging.handlers.DeleteServiceHandler;
 import org.venice.piazza.servicecontroller.messaging.handlers.DescribeServiceHandler;
 import org.venice.piazza.servicecontroller.messaging.handlers.ExecuteServiceHandler;
@@ -71,7 +71,8 @@ import util.PiazzaLogger;
  */
 @RestController
 @RequestMapping({ "/servicecontroller", "" })
-public class ServiceController {
+public class ServiceControllerController {
+	// TODO: rename this to something that is less painful to look at
 
 	@Autowired
 	private LocalValidatorFactoryBean validator;
@@ -86,7 +87,7 @@ public class ServiceController {
 	@Autowired
 	private ListServiceHandler lsHandler;
 	@Autowired
-	private DatabaseAccessor accessor;
+	private ServiceControllerDatabaseAccessor accessor;
 	@Autowired
 	private PiazzaLogger logger;
 	@Autowired
@@ -99,7 +100,7 @@ public class ServiceController {
 	private static final String SERVICE = "Service";
 	private static final String SERVICE_CONTROLLER_LOWER = "serviceController";
 	private static final String SERVICE_CONTROLLER_UPPER = "ServiceController";
-	private static final Logger LOG = LoggerFactory.getLogger(ServiceController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ServiceControllerController.class);
 
 	/**
 	 * Registers a service with the piazza service controller.

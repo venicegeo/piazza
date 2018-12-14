@@ -25,7 +25,7 @@ import org.venice.piazza.common.hibernate.entity.AsyncServiceInstanceEntity;
 import org.venice.piazza.common.hibernate.entity.JobEntity;
 import org.venice.piazza.common.hibernate.entity.ServiceEntity;
 import org.venice.piazza.common.hibernate.entity.ServiceJobEntity;
-import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
+import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 import util.PiazzaLogger;
 
 import java.util.ArrayList;
@@ -55,7 +55,7 @@ public class DatabaseAccessorTest {
     AsyncServiceInstanceDao asyncServiceInstanceDao;
 
     @InjectMocks
-    private DatabaseAccessor accessor;
+    private ServiceControllerDatabaseAccessor accessor;
 
     @Before
     public void setup() {

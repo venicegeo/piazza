@@ -16,6 +16,8 @@
 package org.venice.piazza.access.database;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,16 +55,15 @@ import util.GeoToolsUtil;
 @Component
 public class DatabaseAccessor {
 
-	@Value("${vcap.services.pz-postgres.credentials.db_host}")
-	private String postgresHost;
-	@Value("${vcap.services.pz-postgres.credentials.db_port}")
-	private String postgresPort;
-	@Value("${vcap.services.pz-postgres.credentials.db_name}")
-	private String postgresDBName;
-	@Value("${vcap.services.pz-postgres.credentials.username}")
-	private String postgresUser;
-	@Value("${vcap.services.pz-postgres.credentials.password}")
+	@Value("${vcap.services.pz-postgres.credentials.jdbc_uri}")
+	private String postgresJdbcUri;
+	
+	@Value("${vcap.services.pz-postgres.credentials.username")
+	private String postgresUsername;
+	
+	@Value("${vcap.services.pz-postgres.credentials.password")
 	private String postgresPassword;
+	
 	@Value("${postgres.schema}")
 	private String postgresSchema;
 	
@@ -84,7 +85,24 @@ public class DatabaseAccessor {
 	 * @return Data Store.
 	 */
 	public DataStore getPostGisDataStore() throws IOException {
-		return GeoToolsUtil.getPostGisDataStore(postgresHost, postgresPort, postgresSchema, postgresDBName, postgresUser, postgresPassword);
+		String host, port, dbName;
+		try {
+			String actualUri = postgresJdbcUri;
+			if (actualUri == null) {
+				actualUri = "";
+			}
+			URI uri = new URI(actualUri);
+			host = "" + uri.getHost();
+			port = "" + uri.getPort();
+			dbName = "" + uri.getPath();
+			if (dbName.length() > 1) {
+				dbName = dbName.substring(1); // trim leading slash
+			}
+		} catch (URISyntaxException ex) {
+			host = port = dbName = "";
+		}
+		
+		return GeoToolsUtil.getPostGisDataStore(host, port, postgresSchema, dbName, postgresUsername, postgresPassword);
 	}
 
 	/**

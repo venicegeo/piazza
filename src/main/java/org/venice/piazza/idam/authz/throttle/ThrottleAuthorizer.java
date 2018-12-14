@@ -26,7 +26,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.venice.piazza.idam.authz.Authorizer;
-import org.venice.piazza.idam.data.DatabaseAccessor;
+import org.venice.piazza.idam.data.IDAMDatabaseAccessor;
 
 import model.logger.Severity;
 import model.response.AuthResponse;
@@ -45,7 +45,7 @@ import util.PiazzaLogger;
 @Component
 public class ThrottleAuthorizer implements Authorizer {
 	@Autowired
-	private DatabaseAccessor accessor;
+	private IDAMDatabaseAccessor accessor;
 	@Autowired
 	private PiazzaLogger pzLogger;
 	@Value("${throttle.frequency.interval}")

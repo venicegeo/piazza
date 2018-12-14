@@ -13,7 +13,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.ResourceAccessException;
-import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
+import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 import org.venice.piazza.servicecontroller.taskmanaged.ServiceTaskManager;
 import util.PiazzaLogger;
 
@@ -26,7 +26,7 @@ public class TaskManagedControllerTest {
     @Mock
     private ServiceTaskManager serviceTaskManager;
     @Mock
-    private DatabaseAccessor databaseAccessor;
+    private ServiceControllerDatabaseAccessor databaseAccessor;
 
     @InjectMocks
     private TaskManagedController controller;

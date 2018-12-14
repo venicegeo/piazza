@@ -32,7 +32,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import org.venice.piazza.jobmanager.database.DatabaseAccessor;
+import org.venice.piazza.jobmanager.database.JobManagerDatabaseAccessor;
 import org.venice.piazza.jobmanager.messaging.handler.AbortJobHandler;
 import org.venice.piazza.jobmanager.messaging.handler.RepeatJobHandler;
 import org.venice.piazza.jobmanager.messaging.handler.RequestJobHandler;
@@ -59,7 +59,7 @@ public class HandlerTests {
     @Mock
     private PiazzaLogger logger;
     @Mock
-    private DatabaseAccessor accessor;
+    private JobManagerDatabaseAccessor accessor;
     @Mock
     private UUIDFactory uuidFactory;
     @Mock

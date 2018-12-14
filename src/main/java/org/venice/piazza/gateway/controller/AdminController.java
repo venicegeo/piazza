@@ -42,6 +42,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.venice.piazza.gateway.controller.util.GatewayUtil;
 import org.venice.piazza.gateway.controller.util.PiazzaRestController;
 import org.venice.piazza.idam.controller.AuthController;
+import org.venice.piazza.idam.controller.IDAMAdminController;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -91,7 +92,7 @@ public class AdminController extends PiazzaRestController {
 	@Autowired
 	private AuthController idamAuthController;
 	@Autowired
-	private org.venice.piazza.idam.controller.AdminController idamAdminController;
+	private IDAMAdminController idamAdminController;
 
 	private static final Logger LOG = LoggerFactory.getLogger(AdminController.class);
 

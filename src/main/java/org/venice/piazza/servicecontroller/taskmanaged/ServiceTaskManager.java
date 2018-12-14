@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
-import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
+import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -67,7 +67,7 @@ public class ServiceTaskManager {
 	@Autowired
 	private ObjectMapper objectMapper;
 	@Autowired
-	private DatabaseAccessor accessor;
+	private ServiceControllerDatabaseAccessor accessor;
 	@Autowired
 	private PiazzaLogger piazzaLogger;
 	@Autowired

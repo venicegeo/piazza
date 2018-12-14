@@ -58,7 +58,7 @@ import util.PiazzaLogger;
  * 
  */
 @Component
-public class DatabaseAccessor {
+public class ServiceControllerDatabaseAccessor {
 	@Value("${async.stale.instance.threshold.seconds}")
 	private int STALE_INSTANCE_THRESHOLD_SECONDS; //NOSONAR
 	@Autowired
@@ -73,7 +73,7 @@ public class DatabaseAccessor {
 	@Autowired
 	private JobDao jobDao;
 
-	private static final Logger LOG = LoggerFactory.getLogger(DatabaseAccessor.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ServiceControllerDatabaseAccessor.class);
 	private static final String SERVICE_CTR = "serviceController";
 
 	/**

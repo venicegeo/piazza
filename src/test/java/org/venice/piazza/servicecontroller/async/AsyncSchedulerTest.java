@@ -25,7 +25,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
+import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 
 import model.service.async.AsyncServiceInstance;
 
@@ -37,7 +37,7 @@ import model.service.async.AsyncServiceInstance;
  */
 public class AsyncSchedulerTest {
 	@Mock
-	private DatabaseAccessor accessor;
+	private ServiceControllerDatabaseAccessor accessor;
 	@Mock
 	private AsynchronousServiceWorker worker;
 	@InjectMocks

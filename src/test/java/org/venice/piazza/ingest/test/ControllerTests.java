@@ -37,7 +37,7 @@ import exception.InvalidInputException;
 import org.venice.piazza.access.controller.AccessController;
 import org.venice.piazza.ingest.controller.IngestController;
 import org.venice.piazza.ingest.messaging.IngestThreadManager;
-import org.venice.piazza.ingest.persist.DatabaseAccessor;
+import org.venice.piazza.ingest.persist.IngestDatabaseAccessor;
 import org.venice.piazza.ingest.utility.IngestUtilities;
 import model.data.DataResource;
 import model.job.metadata.ResourceMetadata;
@@ -58,7 +58,7 @@ public class ControllerTests {
 	@Mock
 	private PiazzaLogger logger;
 	@Mock
-	private DatabaseAccessor accessor;
+	private IngestDatabaseAccessor accessor;
 	@Mock
 	private IngestUtilities ingestUtil;
 	@Mock

@@ -46,7 +46,7 @@ import org.venice.piazza.idam.authn.PiazzaAuthenticator;
 import org.venice.piazza.idam.authz.Authorizer;
 import org.venice.piazza.idam.authz.endpoint.EndpointAuthorizer;
 import org.venice.piazza.idam.authz.throttle.ThrottleAuthorizer;
-import org.venice.piazza.idam.data.DatabaseAccessor;
+import org.venice.piazza.idam.data.IDAMDatabaseAccessor;
 import org.venice.piazza.idam.model.GxOAuthResponse;
 import org.venice.piazza.idam.model.authz.AuthorizationException;
 import org.venice.piazza.idam.util.GxOAuthClient;
@@ -73,7 +73,7 @@ public class AuthController {
 	@Autowired
 	private PiazzaLogger pzLogger;
 	@Autowired
-	private DatabaseAccessor accessor;
+	private IDAMDatabaseAccessor accessor;
 	@Autowired
 	private PiazzaAuthenticator piazzaAuthenticator;
 	@Autowired

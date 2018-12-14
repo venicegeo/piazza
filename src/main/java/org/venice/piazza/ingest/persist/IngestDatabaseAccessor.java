@@ -37,17 +37,17 @@ import util.PiazzaLogger;
  * 
  */
 @Component
-public class DatabaseAccessor {
+public class IngestDatabaseAccessor {
 	@Autowired
 	private PiazzaLogger piazzaLogger;
 
 	@Autowired
 	DataResourceDao dataResourceDao;
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseAccessor.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(IngestDatabaseAccessor.class);
 	private static final String DATAID = "dataId";
 
-	public DatabaseAccessor() {
+	public IngestDatabaseAccessor() {
 		// Expected for Component instantiation
 	}
 

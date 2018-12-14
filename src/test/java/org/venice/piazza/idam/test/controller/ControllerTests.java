@@ -39,9 +39,9 @@ import org.springframework.web.servlet.view.RedirectView;
 import org.venice.piazza.idam.authn.PiazzaAuthenticator;
 import org.venice.piazza.idam.authz.endpoint.EndpointAuthorizer;
 import org.venice.piazza.idam.authz.throttle.ThrottleAuthorizer;
-import org.venice.piazza.idam.controller.AdminController;
+import org.venice.piazza.idam.controller.IDAMAdminController;
 import org.venice.piazza.idam.controller.AuthController;
-import org.venice.piazza.idam.data.DatabaseAccessor;
+import org.venice.piazza.idam.data.IDAMDatabaseAccessor;
 import org.venice.piazza.idam.model.GxOAuthResponse;
 import org.venice.piazza.idam.util.GxOAuthClient;
 import util.PiazzaLogger;
@@ -66,7 +66,7 @@ public class ControllerTests {
     @Mock
     private RestTemplate restTemplate;
     @Mock
-    private DatabaseAccessor accessor;
+    private IDAMDatabaseAccessor accessor;
     @Mock
     private UUIDFactory uuidFactory;
     @Mock
@@ -83,7 +83,7 @@ public class ControllerTests {
     private GxOAuthClient oAuthClient;
 
     @InjectMocks
-    private AdminController adminController;
+    private IDAMAdminController adminController;
     @InjectMocks
     private AuthController authenticationController;
 

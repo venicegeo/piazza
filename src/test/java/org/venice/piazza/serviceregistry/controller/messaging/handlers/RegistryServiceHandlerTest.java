@@ -30,7 +30,7 @@ import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.web.client.RestTemplate;
-import org.venice.piazza.servicecontroller.data.accessor.DatabaseAccessor;
+import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 import org.venice.piazza.servicecontroller.messaging.handlers.RegisterServiceHandler;
 import org.venice.piazza.servicecontroller.util.CoreServiceProperties;
 
@@ -90,7 +90,7 @@ public class RegistryServiceHandlerTest {
 	@Test
 	@Ignore
 	public void testHandleWithData() {
-		DatabaseAccessor mockAccessor = mock(DatabaseAccessor.class);
+		ServiceControllerDatabaseAccessor mockAccessor = mock(ServiceControllerDatabaseAccessor.class);
 		when(mockAccessor.save(service)).thenReturn("8");
 		CoreServiceProperties props = mock(CoreServiceProperties.class);
 		//when(props.getUuidservicehost().thenReturn("Nothing");
@@ -104,7 +104,7 @@ public class RegistryServiceHandlerTest {
 	@PrepareForTest({RegisterServiceHandler.class})
 	@Test
 	public void testHandleWithoutData() {
-		DatabaseAccessor mockAccessor = mock(DatabaseAccessor.class);
+		ServiceControllerDatabaseAccessor mockAccessor = mock(ServiceControllerDatabaseAccessor.class);
 		when(mockAccessor.save(service)).thenReturn("8");
 		CoreServiceProperties props = mock(CoreServiceProperties.class);
 		PiazzaLogger logger = mock(PiazzaLogger.class);
