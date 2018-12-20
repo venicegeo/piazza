@@ -18,6 +18,7 @@ package org.venice.piazza.access.test;
 import org.venice.piazza.access.deploy.geoserver.AuthHeaders;
 import org.venice.piazza.access.deploy.geoserver.PiazzaEnvironment;
 import org.venice.piazza.access.util.AccessUtilities;
+import org.venice.piazza.util.DatabaseCredentials;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Before;
@@ -52,6 +53,8 @@ public class PiazzaEnvironmentTests {
     private AuthHeaders authHeaders;
     @Mock
     private PiazzaLogger pzLogger;
+    @Mock 
+    private DatabaseCredentials databaseCredentials;
     @InjectMocks
     private PiazzaEnvironment piazzaEnvironment;
 
@@ -70,9 +73,10 @@ public class PiazzaEnvironmentTests {
 
         ReflectionTestUtils.setField(this.piazzaEnvironment, "postgresServiceKeyUser", "junit_user");
         ReflectionTestUtils.setField(this.piazzaEnvironment, "postgresServiceKeyPassword", "junit_user_password");
-        ReflectionTestUtils.setField(this.piazzaEnvironment, "postgresPort", "5432");
-        ReflectionTestUtils.setField(this.piazzaEnvironment, "postgresDatabase", "junit_database_name");
-        ReflectionTestUtils.setField(this.piazzaEnvironment, "postgresHost", "junit_host");
+        
+        Mockito.when(databaseCredentials.getHost()).thenReturn("junit_host");
+        Mockito.when(databaseCredentials.getDbName()).thenReturn("junit_database_name");
+        Mockito.when(databaseCredentials.getPort()).thenReturn(5432);
 
         Mockito.when(this.accessUtilities.getGeoServerBaseUrl()).thenReturn("http://localhost:8080/geoserver");
     }

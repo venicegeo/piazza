@@ -31,6 +31,7 @@ import org.venice.piazza.common.hibernate.dao.LeaseDao;
 import org.venice.piazza.common.hibernate.dao.dataresource.DataResourceDao;
 import org.venice.piazza.common.hibernate.dao.deployment.DeploymentDao;
 import org.venice.piazza.common.hibernate.entity.DataResourceEntity;
+import org.venice.piazza.util.DatabaseCredentials;
 import org.venice.piazza.access.database.DatabaseAccessor;
 import model.data.DataResource;
 import model.data.deployment.Deployment;
@@ -55,6 +56,8 @@ public class DatabaseAccessorTests {
 	private DeploymentDao deploymentDao;
 	@Mock
 	private DeploymentGroupDao deploymentGroupDao;
+	@Mock
+	private DatabaseCredentials databaseCredentials;
 	@InjectMocks
 	private DatabaseAccessor databaseAccessor;
 	
