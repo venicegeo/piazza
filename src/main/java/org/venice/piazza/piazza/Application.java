@@ -38,6 +38,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
@@ -111,4 +112,10 @@ public class Application extends SpringBootServletInitializer implements AsyncCo
 		return (Throwable ex, Method method, Object... params) -> LOG
 				.error("Uncaught Threading exception encountered in {} with details: {}", ex.getMessage(), method.getName());
 	}
+	
+
+//	@Bean
+//	public LocalValidatorFactoryBean getLocalValidatorFactoryBean() {
+//		return new LocalValidatorFactoryBean();
+//	}
 }

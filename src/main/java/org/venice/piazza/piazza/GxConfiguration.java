@@ -35,7 +35,7 @@ import org.venice.piazza.idam.authn.GxAuthenticator;
 import org.venice.piazza.idam.authn.PiazzaAuthenticator;
 
 @Configuration
-@Profile({ "geoaxis" }) class GxConfig {
+@Profile({ "geoaxis" }) class GxConfiguration {
 
 	@Value("${http.max.total}")
 	private int httpMaxTotal;

@@ -104,7 +104,6 @@ public class RegistryServiceHandlerTest {
 	public void testHandleWithoutData() {
 		ServiceControllerDatabaseAccessor mockAccessor = mock(ServiceControllerDatabaseAccessor.class);
 		when(mockAccessor.save(service)).thenReturn("8");
-		PiazzaLogger logger = mock(PiazzaLogger.class);
 		Service nullService = null;
         String retVal = rsHandler.handle(nullService);
         assertNull(retVal);
