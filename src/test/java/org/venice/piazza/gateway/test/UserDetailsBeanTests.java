@@ -32,6 +32,8 @@ import org.springframework.web.client.RestTemplate;
 
 import org.venice.piazza.gateway.auth.ExtendedRequestDetails;
 import org.venice.piazza.gateway.auth.UserDetailsBean;
+import org.venice.piazza.idam.controller.AuthController;
+
 import model.response.AuthResponse;
 import model.security.authz.UserProfile;
 import util.PiazzaLogger;
@@ -41,16 +43,15 @@ public class UserDetailsBeanTests {
 	private PiazzaLogger logger;
 	@Mock
 	private RestTemplate restTemplate;
+	@Mock
+	private AuthController authController;
 	@InjectMocks
 	private UserDetailsBean userDetails;
 
-	private String MOCK_SECURITY_URL = "mock-security-test.com";
 
 	@Before
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
-
-		ReflectionTestUtils.setField(userDetails, "SECURITY_URL", MOCK_SECURITY_URL);
 	}
 
 	@Test
@@ -60,8 +61,8 @@ public class UserDetailsBeanTests {
 		mockProfile.setDistinguishedName("TestDN");
 		mockProfile.setUsername("Tester");
 		AuthResponse mockResponse = new AuthResponse(true, mockProfile);
-		Mockito.doReturn(new ResponseEntity<AuthResponse>(mockResponse, HttpStatus.OK)).when(restTemplate)
-				.postForEntity(Mockito.anyString(), Mockito.any(), Mockito.eq(AuthResponse.class));
+		Mockito.when(authController.authenticateApiKey(Mockito.any()))
+			.thenReturn(new ResponseEntity<AuthResponse>(mockResponse, HttpStatus.OK));
 		// Test
 		AuthResponse response = userDetails.getAuthenticationDecision("apiKey123");
 
@@ -81,8 +82,8 @@ public class UserDetailsBeanTests {
 		mockProfile.setDistinguishedName("TestDN");
 		mockProfile.setUsername("Tester");
 		AuthResponse mockResponse = new AuthResponse(true, mockProfile);
-		Mockito.doReturn(new ResponseEntity<AuthResponse>(mockResponse, HttpStatus.OK)).when(restTemplate)
-				.postForEntity(Mockito.anyString(), Mockito.any(), Mockito.eq(AuthResponse.class));
+		Mockito.when(authController.authenticateAndAuthorize(Mockito.any()))
+			.thenReturn(new ResponseEntity<AuthResponse>(mockResponse, HttpStatus.OK));
 		// Test
 		AuthResponse response = userDetails.getFullAuthorizationDecision("apiKey123", mockDetails);
 

@@ -95,8 +95,6 @@ public class JobController extends PiazzaRestController {
 	@Autowired
 	private ObjectMapper mapper;
 
-	@Value("${jobmanager.url}")
-	private String JOBMANAGER_URL;
 	@Value("${SPACE}")
 	private String SPACE;
 

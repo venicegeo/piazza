@@ -15,13 +15,12 @@
  **/
 package org.venice.piazza.gateway.auth;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.venice.piazza.idam.controller.AuthController;
 
 import model.logger.AuditElement;
 import model.logger.Severity;
@@ -38,12 +37,10 @@ import util.PiazzaLogger;
  */
 @Service
 public class UserDetailsBean {
-	@Value("${security.url}")
-	private String SECURITY_URL;
-	@Autowired
-	private RestTemplate restTemplate;
 	@Autowired
 	private PiazzaLogger logger;
+	@Autowired
+	private AuthController authController;
 
 	/**
 	 * Gets a full Authentication/Authorization decision for a user. This checks the validity of the API Key, and, if
@@ -56,17 +53,13 @@ public class UserDetailsBean {
 	 * @return The Auth response, containing details and success/failure information.
 	 */
 	public AuthResponse getFullAuthorizationDecision(String apiKey, ExtendedRequestDetails requestDetails) {
-		String url = String.format("%s/%s", SECURITY_URL, "/authz");
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
 		// Create the Authorization Check based on the Request Details
 		AuthorizationCheck authorizationCheck = new AuthorizationCheck();
 		authorizationCheck.setApiKey(apiKey);
 		Permission permission = new Permission(requestDetails.getRequest().getMethod(), requestDetails.getRequest().getRequestURI());
 		authorizationCheck.setAction(permission);
 		// Send request to Pz-Idam
-		HttpEntity<AuthorizationCheck> request = new HttpEntity<>(authorizationCheck, headers);
-		AuthResponse response = restTemplate.postForEntity(url, request, AuthResponse.class).getBody();
+		AuthResponse response = authController.authenticateAndAuthorize(authorizationCheck).getBody();
 		// If the UserProfile was returned, log the Username
 		String userName = null;
 		if (response.getIsAuthSuccess()) {
@@ -91,11 +84,9 @@ public class UserDetailsBean {
 	 * @return The Auth response, containing details and success/failure information.
 	 */
 	public AuthResponse getAuthenticationDecision(String uuid) {
-		String url = String.format("%s/%s", SECURITY_URL, "/authn");
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		HttpEntity<PiazzaVerificationRequest> request = new HttpEntity<>(new PiazzaVerificationRequest(uuid), headers);
-		AuthResponse response = restTemplate.postForEntity(url, request, AuthResponse.class).getBody();
+		Map<String, String> request = new HashMap<>();
+		request.put("uuid", uuid);
+		AuthResponse response = authController.authenticateApiKey(request).getBody();
 		String actionName = response.getIsAuthSuccess() ? "keyVerified" : "keyDeclined";
 		// If the UserProfile was returned, log the Username
 		String userName = null;

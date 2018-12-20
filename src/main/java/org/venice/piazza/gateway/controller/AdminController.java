@@ -75,18 +75,6 @@ public class AdminController extends PiazzaRestController {
 	private GatewayUtil gatewayUtil;
 	@Value("${SPACE}")
 	private String SPACE;
-	@Value("${ingest.url}")
-	private String INGEST_URL;
-	@Value("${access.url}")
-	private String ACCESS_URL;
-	@Value("${jobmanager.url}")
-	private String JOBMANAGER_URL;
-	@Value("${servicecontroller.url}")
-	private String SERVICECONTROLLER_URL;
-	@Value("${security.url}")
-	private String SECURITY_URL;
-	@Value("${release.url}")
-	private String RELEASE_URL;
 
 
 	@Autowired
@@ -142,12 +130,12 @@ public class AdminController extends PiazzaRestController {
 		Map<String, Object> stats = new HashMap<String, Object>();
 		// Write the URL configs
 		stats.put("Space", SPACE);
-		stats.put("Ingest", INGEST_URL);
-		stats.put("Access", ACCESS_URL);
-		stats.put("JobManager", JOBMANAGER_URL);
-		stats.put("ServiceController", SERVICECONTROLLER_URL);
-		stats.put("Security", SECURITY_URL);
-		stats.put("Release", RELEASE_URL);
+		stats.put("Ingest", "<internalized>");
+		stats.put("Access", "<internalized>");
+		stats.put("JobManager", "<internalized>");
+		stats.put("ServiceController", "<internalized>");
+		stats.put("Security", "<internalized>");
+		stats.put("Release", "<internalized>");
 		// Return
 		return new ResponseEntity<Map<String, Object>>(stats, HttpStatus.OK);
 	}

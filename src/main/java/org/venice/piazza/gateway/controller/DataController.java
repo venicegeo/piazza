@@ -83,10 +83,6 @@ public class DataController extends PiazzaRestController {
 	private GatewayUtil gatewayUtil;
 	@Autowired
 	private PiazzaLogger logger;
-	@Value("${ingest.url}")
-	private String INGEST_URL;
-	@Value("${access.url}")
-	private String ACCESS_URL;
 	@Value("${SPACE}")
 	private String SPACE;
 
@@ -165,37 +161,6 @@ public class DataController extends PiazzaRestController {
 		}
 	}
 	
-	private String constructURL(final Integer page, 
-			final Integer perPage, 
-			final String keyword, 
-			final String createdBy, 
-			final String order, 
-			final String sortBy, 
-			final String createdByJobId) {
-		
-		String url = String.format("%s/%s?page=%s&perPage=%s", ACCESS_URL, "data", page, perPage);
-		// Attach keywords if specified
-		if ((keyword != null) && (keyword.isEmpty() == false)) {
-			url = String.format("%s&keyword=%s", url, keyword);
-		}
-		// Add username if specified
-		if ((createdBy != null) && (createdBy.isEmpty() == false)) {
-			url = String.format("%s&userName=%s", url, createdBy);
-		}
-		// Add optional pagination
-		if ((order != null) && (order.isEmpty() == false)) {
-			url = String.format("%s&order=%s", url, order);
-		}
-		if ((sortBy != null) && (sortBy.isEmpty() == false)) {
-			url = String.format("%s&sortBy=%s", url, sortBy);
-		}
-		if ((createdByJobId != null) && (createdByJobId.isEmpty() == false)) {
-			url = String.format("%s&createdByJobId=%s", url, createdByJobId);
-		}
-		
-		return url;
-	}
-
 	/**
 	 * Returns a queried list of Data Resources previously loaded into Piazza that have been loaded by the current user.
 	 * 
@@ -530,13 +495,6 @@ public class DataController extends PiazzaRestController {
 			String dn = gatewayUtil.getDistinguishedName(SecurityContextHolder.getContext().getAuthentication());
 			logger.log(String.format("User %s requested file download for Data %s", gatewayUtil.getPrincipalName(user), dataId),
 					Severity.INFORMATIONAL, new AuditElement(dn, "requestDownloadFile", dataId));
-
-			// Get the bytes of the Data
-			String url = String.format("%s/file/%s.json", ACCESS_URL, dataId);
-			// Attach keywords if specified
-			if ((fileName != null) && (fileName.isEmpty() == false)) {
-				url = String.format("%s?fileName=%s", url, fileName);
-			}
 
 			// Proxy the request to Ingest
 			try {
