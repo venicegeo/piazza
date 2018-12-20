@@ -31,8 +31,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 
-import org.venice.piazza.servicecontroller.util.CoreServiceProperties;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,8 +55,6 @@ public class ListServiceHandlerTest {
 	private PiazzaLogger coreLoggerMock;
 	@Mock
 	private ServiceControllerDatabaseAccessor accessorMock;
-	@Mock
-	private CoreServiceProperties coreServicePropMock;
 	@Mock 
 	private PiazzaLogger piazzaLoggerMock;
 	@Mock

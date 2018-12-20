@@ -42,6 +42,8 @@ import com.amazonaws.AmazonClientException;
 import exception.DataInspectException;
 import exception.InvalidInputException;
 import org.venice.piazza.ingest.utility.IngestUtilities;
+import org.venice.piazza.util.DatabaseCredentials;
+
 import model.data.DataResource;
 import model.data.type.PostGISDataType;
 import model.data.type.WfsDataType;
@@ -64,18 +66,8 @@ public class WfsInspector implements InspectorType {
 	@Autowired
 	private PiazzaLogger logger;
 	private static final String CAPABILITIES_TEMPLATE = "%s?SERVICE=wfs&REQUEST=GetCapabilities&VERSION=%s";
-	@Value("${vcap.services.pz-postgres.credentials.db_host}")
-	private String POSTGRES_HOST;
-	@Value("${vcap.services.pz-postgres.credentials.db_port}")
-	private String POSTGRES_PORT;
-	@Value("${vcap.services.pz-postgres.credentials.db_name}")
-	private String POSTGRES_DB_NAME;
-	@Value("${vcap.services.pz-postgres.credentials.username}")
-	private String POSTGRES_USER;
-	@Value("${vcap.services.pz-postgres.credentials.password}")
-	private String POSTGRES_PASSWORD;
-	@Value("${postgres.schema}")
-	private String POSTGRES_SCHEMA;
+	@Autowired
+	private DatabaseCredentials databaseCredentials;
 
 	private static final Logger LOG = LoggerFactory.getLogger(WfsInspector.class);
 
@@ -140,8 +132,13 @@ public class WfsInspector implements InspectorType {
 	private void copyWfsToPostGis(DataResource dataResource, FeatureSource<SimpleFeatureType, SimpleFeature> wfsFeatureSource)
 			throws IOException {
 		// Create a Connection to the Piazza PostGIS Database for writing.
-		DataStore postGisStore = GeoToolsUtil.getPostGisDataStore(POSTGRES_HOST, POSTGRES_PORT, POSTGRES_SCHEMA, POSTGRES_DB_NAME,
-				POSTGRES_USER, POSTGRES_PASSWORD);
+		DataStore postGisStore = GeoToolsUtil.getPostGisDataStore(
+				databaseCredentials.getHost(), 
+				""+databaseCredentials.getPort(), 
+				databaseCredentials.getSchema(), 
+				databaseCredentials.getDbName(),
+				databaseCredentials.getUsername(), 
+				databaseCredentials.getPassword());
 
 		// Create the Schema in the Data Store
 		String tableName = dataResource.getDataId();
@@ -180,7 +177,7 @@ public class WfsInspector implements InspectorType {
 		// Update the Metadata of the DataResource to the new PostGIS table, and
 		// treat as a PostGIS Resource type from now on.
 		PostGISDataType postGisData = new PostGISDataType();
-		postGisData.database = POSTGRES_DB_NAME;
+		postGisData.database = databaseCredentials.getDbName();
 		postGisData.table = tableName;
 		dataResource.dataType = postGisData;
 	}

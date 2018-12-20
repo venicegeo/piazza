@@ -107,7 +107,7 @@ public class AdminController extends PiazzaRestController {
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	@ApiOperation(hidden = true, value = "Health Check")
 	public String getHealthCheck() {
-		return "Hello, Health Check here for pz-gateway.";
+		return "Hello, Health Check here for piazza.";
 	}
 
 	/**

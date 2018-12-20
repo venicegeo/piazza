@@ -23,7 +23,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
-import org.venice.piazza.servicecontroller.util.CoreServiceProperties;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,8 +43,6 @@ public class ServiceMessageThreadManagerTest {
 	private ServiceControllerDatabaseAccessor accessorMock;
 	@Mock
 	private Service serviceMock;
-	@Mock
-	private CoreServiceProperties propertiesMock;
 	@Mock
 	private ServiceMessageWorker serviceMessageWorker;
 	@Spy

@@ -43,6 +43,8 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.venice.piazza.access.util.AccessUtilities;
+import org.venice.piazza.util.DatabaseCredentials;
+
 import model.logger.AuditElement;
 import model.logger.Severity;
 import util.PiazzaLogger;
@@ -56,23 +58,15 @@ import util.PiazzaLogger;
  */
 @Component
 public class PiazzaEnvironment {
-	@Value("${vcap.services.pz-postgres.credentials.db_host}")
-	private String postgresHost;
-	@Value("${vcap.services.pz-postgres.credentials.db_port}")
-	private String postgresPort;
-	@Value("${vcap.services.pz-postgres.credentials.db_name}")
-	private String postgresDatabase;
-	@Value("${vcap.services.pz-postgres.credentials.username}")
-	private String postgresUser;
-	@Value("${vcap.services.pz-postgres.credentials.password}")
-	private String postgresPassword;
+	@Autowired
+	private DatabaseCredentials databaseCredentials;	
 	@Value("${vcap.services.pz-postgres-service-key.credentials.username}")
 	private String postgresServiceKeyUser;
 	@Value("${vcap.services.pz-postgres-service-key.credentials.password}")
 	private String postgresServiceKeyPassword;
 	@Value("${geoserver.creation.timeout}")
 	private int restTemplateConnectionReadTimeout;
-	@Value("${exit.on.geoserver.provision.failure}")
+	@Value("${geoserver.exitOnProvisionFailure}")
 	private Boolean exitOnGeoServerProvisionFailure;
 	@Value("${geoserver.workspace.name}")
 	private String workspaceName;
@@ -250,9 +244,9 @@ public class PiazzaEnvironment {
 			// Insert the credential data into the template
 			dataStoreBody = dataStoreBody.replace("$DB_USER", postgresServiceKeyUser);
 			dataStoreBody = dataStoreBody.replace("$DB_PASSWORD", postgresServiceKeyPassword);
-			dataStoreBody = dataStoreBody.replace("$DB_PORT", postgresPort);
-			dataStoreBody = dataStoreBody.replace("$DB_NAME", postgresDatabase);
-			dataStoreBody = dataStoreBody.replace("$DB_HOST", postgresHost);
+			dataStoreBody = dataStoreBody.replace("$DB_PORT", ""+databaseCredentials.getPort());
+			dataStoreBody = dataStoreBody.replace("$DB_NAME", databaseCredentials.getDbName());
+			dataStoreBody = dataStoreBody.replace("$DB_HOST", databaseCredentials.getHost());
 			dataStoreBody = dataStoreBody.replace("$GS_STORE_NAME", dataStoreName);
 			dataStoreBody = dataStoreBody.replace("$GS_WORKSPACE_NAME", workspaceName);
 
@@ -286,7 +280,7 @@ public class PiazzaEnvironment {
 	 * If the application is configured to exit on GeoServer configuration error, this method will terminate it.
 	 */
 	private void determineExit() {
-		if (exitOnGeoServerProvisionFailure.booleanValue()) {
+		if (exitOnGeoServerProvisionFailure==null || exitOnGeoServerProvisionFailure.booleanValue()) {
 			pzLogger.log(
 					"GeoServer resources could not be appropriately provisioned due to errors received from GeoServer. This application is configured to shut down and will do so now.",
 					Severity.INFORMATIONAL);

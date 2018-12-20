@@ -42,7 +42,6 @@ import org.venice.piazza.servicecontroller.messaging.handlers.ExecuteServiceHand
 import org.venice.piazza.servicecontroller.messaging.handlers.ListServiceHandler;
 import org.venice.piazza.servicecontroller.messaging.handlers.RegisterServiceHandler;
 import org.venice.piazza.servicecontroller.messaging.handlers.UpdateServiceHandler;
-import org.venice.piazza.servicecontroller.util.CoreServiceProperties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -83,8 +82,6 @@ public class ServiceMessageWorkerTest {
 	private ListServiceHandler lsHandlerMock;
 	@Mock
 	private DeleteServiceHandler dlHandlerMock;
-	@Mock
-	private CoreServiceProperties coreServicePropMock;
 	@Mock
 	private UUIDFactory uuidFactoryMock;
 	@Mock

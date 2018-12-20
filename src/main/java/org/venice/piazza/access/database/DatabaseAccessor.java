@@ -36,6 +36,7 @@ import org.venice.piazza.common.hibernate.entity.DataResourceEntity;
 import org.venice.piazza.common.hibernate.entity.DeploymentEntity;
 import org.venice.piazza.common.hibernate.entity.DeploymentGroupEntity;
 import org.venice.piazza.common.hibernate.entity.LeaseEntity;
+import org.venice.piazza.util.DatabaseCredentials;
 
 import model.data.DataResource;
 import model.data.deployment.Deployment;
@@ -54,18 +55,8 @@ import util.GeoToolsUtil;
  */
 @Component
 public class DatabaseAccessor {
-
-	@Value("${vcap.services.pz-postgres.credentials.jdbc_uri}")
-	private String postgresJdbcUri;
-	
-	@Value("${vcap.services.pz-postgres.credentials.username")
-	private String postgresUsername;
-	
-	@Value("${vcap.services.pz-postgres.credentials.password")
-	private String postgresPassword;
-	
-	@Value("${postgres.schema}")
-	private String postgresSchema;
+	@Autowired
+	private DatabaseCredentials databaseCredentials;
 	
 	@Autowired
 	private DataResourceDao dataResourceDao;
@@ -83,26 +74,16 @@ public class DatabaseAccessor {
 	 * Gets the PostGIS data store for GeoTools.
 	 * 
 	 * @return Data Store.
+	 * @throws IOException 
 	 */
 	public DataStore getPostGisDataStore() throws IOException {
-		String host, port, dbName;
-		try {
-			String actualUri = postgresJdbcUri;
-			if (actualUri == null) {
-				actualUri = "";
-			}
-			URI uri = new URI(actualUri);
-			host = "" + uri.getHost();
-			port = "" + uri.getPort();
-			dbName = "" + uri.getPath();
-			if (dbName.length() > 1) {
-				dbName = dbName.substring(1); // trim leading slash
-			}
-		} catch (URISyntaxException ex) {
-			host = port = dbName = "";
-		}
-		
-		return GeoToolsUtil.getPostGisDataStore(host, port, postgresSchema, dbName, postgresUsername, postgresPassword);
+		return GeoToolsUtil.getPostGisDataStore(
+				databaseCredentials.getHost(), 
+				"" + databaseCredentials.getPort(), 
+				databaseCredentials.getSchema(), 
+				databaseCredentials.getDbName(), 
+				databaseCredentials.getUsername(), 
+				databaseCredentials.getPassword());
 	}
 
 	/**

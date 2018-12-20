@@ -397,25 +397,6 @@ public class ServiceControllerController {
 	}
 
 	/**
-	 * Healthcheck to see if the Piazza Service Controller is up and running. This service is meant for internal Piazza
-	 * use, Swiss-Army-Knife (SAK) administration and for testing of the serviceController.
-	 * 
-	 * @return welcome message
-	 */
-	@RequestMapping(value = "/", method = RequestMethod.GET)
-	public ResponseEntity<String> healthCheck() {
-		logger.log("Health Check called", Severity.DEBUG);
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.setContentType(MediaType.valueOf("text/html"));
-		String htmlMessage = "<HTML><TITLE>Piazza Service Controller Welcome</TITLE>";
-		htmlMessage = htmlMessage + "<BODY><BR> Welcome from the Piazza Service Controller. "
-				+ "<BR>For details on running and using the ServiceController, " + "<BR>see The Piazza Developer's Guide<A> for details."
-				+ "<BODY></HTML>";
-
-		return new ResponseEntity<>(htmlMessage, responseHeaders, HttpStatus.OK);
-	}
-
-	/**
 	 * Statistics for the Piazza Service controller This service is meant for internal Piazza use, Swiss-Army-Knife
 	 * (SAK) administration and for testing of the serviceController.
 	 * 

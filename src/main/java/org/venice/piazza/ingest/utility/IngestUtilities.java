@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.venice.piazza.util.DatabaseCredentials;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -89,19 +90,9 @@ public class IngestUtilities {
 	@Autowired
 	private PiazzaLogger logger;
 
-	@Value("${vcap.services.pz-postgres.credentials.db_host}")
-	private String POSTGRES_HOST;
-	@Value("${vcap.services.pz-postgres.credentials.db_port}")
-	private String POSTGRES_PORT;
-	@Value("${vcap.services.pz-postgres.credentials.db_name}")
-	private String POSTGRES_DB_NAME;
-	@Value("${vcap.services.pz-postgres.credentials.username}")
-	private String POSTGRES_USER;
-	@Value("${vcap.services.pz-postgres.credentials.password}")
-	private String POSTGRES_PASSWORD;
-	@Value("${postgres.schema}")
-	private String POSTGRES_SCHEMA;
-
+	@Autowired
+	private DatabaseCredentials databaseCredentials;
+	
 	@Value("${vcap.services.pz-blobstore.credentials.access_key_id}")
 	private String AMAZONS3_ACCESS_KEY;
 	@Value("${vcap.services.pz-blobstore.credentials.secret_access_key}")
@@ -254,8 +245,13 @@ public class IngestUtilities {
 	public void persistFeatures(FeatureSource<SimpleFeatureType, SimpleFeature> featureSource, DataResource dataResource,
 			SimpleFeatureType featureSchema) throws IOException {
 		// Get the dataStore to the postGIS database.
-		DataStore postGisStore = GeoToolsUtil.getPostGisDataStore(POSTGRES_HOST, POSTGRES_PORT, POSTGRES_SCHEMA, POSTGRES_DB_NAME,
-				POSTGRES_USER, POSTGRES_PASSWORD);
+		DataStore postGisStore = GeoToolsUtil.getPostGisDataStore(
+				databaseCredentials.getHost(), 
+				""+databaseCredentials.getPort(), 
+				databaseCredentials.getSchema(), 
+				databaseCredentials.getDbName(),
+				databaseCredentials.getUsername(), 
+				databaseCredentials.getPassword());
 
 		// Create the schema in the data store
 		String tableName = dataResource.getDataId();
@@ -482,8 +478,13 @@ public class IngestUtilities {
 		logger.log("Dropping Table from PostGIS", Severity.INFORMATIONAL, new AuditElement(INGEST, "deletePostGisTable", tableName));
 
 		// Delete the table
-		DataStore postGisStore = GeoToolsUtil.getPostGisDataStore(POSTGRES_HOST, POSTGRES_PORT, POSTGRES_SCHEMA, POSTGRES_DB_NAME,
-				POSTGRES_USER, POSTGRES_PASSWORD);
+		DataStore postGisStore = GeoToolsUtil.getPostGisDataStore(
+				databaseCredentials.getHost(), 
+				""+databaseCredentials.getPort(), 
+				databaseCredentials.getSchema(), 
+				databaseCredentials.getDbName(),
+				databaseCredentials.getUsername(), 
+				databaseCredentials.getPassword());
 		try {
 			postGisStore.removeSchema(tableName);
 		} catch (IllegalArgumentException exception) {

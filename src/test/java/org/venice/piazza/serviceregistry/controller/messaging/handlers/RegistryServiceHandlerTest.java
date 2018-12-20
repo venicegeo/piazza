@@ -32,7 +32,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.web.client.RestTemplate;
 import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 import org.venice.piazza.servicecontroller.messaging.handlers.RegisterServiceHandler;
-import org.venice.piazza.servicecontroller.util.CoreServiceProperties;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -92,7 +91,6 @@ public class RegistryServiceHandlerTest {
 	public void testHandleWithData() {
 		ServiceControllerDatabaseAccessor mockAccessor = mock(ServiceControllerDatabaseAccessor.class);
 		when(mockAccessor.save(service)).thenReturn("8");
-		CoreServiceProperties props = mock(CoreServiceProperties.class);
 		//when(props.getUuidservicehost().thenReturn("Nothing");
 		PiazzaLogger logger = mock(PiazzaLogger.class);
         String retVal = rsHandler.handle(service);
@@ -106,7 +104,6 @@ public class RegistryServiceHandlerTest {
 	public void testHandleWithoutData() {
 		ServiceControllerDatabaseAccessor mockAccessor = mock(ServiceControllerDatabaseAccessor.class);
 		when(mockAccessor.save(service)).thenReturn("8");
-		CoreServiceProperties props = mock(CoreServiceProperties.class);
 		PiazzaLogger logger = mock(PiazzaLogger.class);
 		Service nullService = null;
         String retVal = rsHandler.handle(nullService);

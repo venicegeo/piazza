@@ -33,9 +33,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.venice.piazza.servicecontroller.data.accessor.ServiceControllerDatabaseAccessor;
 
-import org.venice.piazza.servicecontroller.util.CoreServiceProperties;
-
-
 import model.job.PiazzaJobType;
 import model.job.metadata.ResourceMetadata;
 import model.job.type.DeleteServiceJob;
@@ -59,8 +56,6 @@ public class DeleteServiceHandlerTest {
 	// Create some mocks
 	@Mock
 	private ServiceControllerDatabaseAccessor accessorMock;
-	@Mock
-	private CoreServiceProperties coreServicePropMock;
 	@InjectMocks 
 	private PiazzaLogger piazzaLoggerMock;
 	

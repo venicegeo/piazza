@@ -55,16 +55,6 @@ public class IDAMAdminController {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(IDAMAdminController.class);
 
-	/**
-	 * Healthcheck required for all Piazza Core Services
-	 * 
-	 * @return String
-	 */
-	@RequestMapping(value = "/", method = RequestMethod.GET)
-	public String getHealthCheck() {
-		return "Hello, Health Check here for pz-idam.";
-	}
-
 	@RequestMapping(value = "/admin/stats", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public String getAdminStats() {
 		return "{ \"profiles\":\"" + String.join(",", env.getActiveProfiles()) + "\" }";

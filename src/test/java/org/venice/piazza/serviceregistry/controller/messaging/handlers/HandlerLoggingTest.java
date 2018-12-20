@@ -40,7 +40,6 @@ import org.venice.piazza.servicecontroller.messaging.handlers.ExecuteServiceHand
 import org.venice.piazza.servicecontroller.messaging.handlers.ListServiceHandler;
 import org.venice.piazza.servicecontroller.messaging.handlers.RegisterServiceHandler;
 import org.venice.piazza.servicecontroller.messaging.handlers.UpdateServiceHandler;
-import org.venice.piazza.servicecontroller.util.CoreServiceProperties;
 
 import model.data.DataType;
 import model.data.type.BodyDataType;
@@ -74,7 +73,6 @@ public class HandlerLoggingTest {
 	RestTemplate template = null;
 	ServiceControllerDatabaseAccessor accessor = null;
 	PiazzaLogger logger = null;
-	CoreServiceProperties props = null;
 
 	@Before
 	public void setup() {
@@ -98,7 +96,6 @@ public class HandlerLoggingTest {
 		when(accessor.save(service)).thenReturn("8");
 		when(accessor.getServiceById("8")).thenReturn(service);
 		logger = mock(PiazzaLogger.class);
-		props = mock(CoreServiceProperties.class);
 	}
 
 	@Test

@@ -48,7 +48,6 @@ import org.venice.piazza.servicecontroller.messaging.handlers.ExecuteServiceHand
 import org.venice.piazza.servicecontroller.messaging.handlers.ListServiceHandler;
 import org.venice.piazza.servicecontroller.messaging.handlers.RegisterServiceHandler;
 import org.venice.piazza.servicecontroller.messaging.handlers.UpdateServiceHandler;
-import org.venice.piazza.servicecontroller.util.CoreServiceProperties;
 import org.venice.piazza.servicecontroller.util.TestUtilities;
 
 import model.data.DataType;
@@ -87,8 +86,6 @@ public class ServiceControllerTest {
 	private DeleteServiceHandler dlHandlerMock;
 	@Mock
 	private ServiceControllerDatabaseAccessor accessorMock;
-	@Mock
-	private CoreServiceProperties coreServicePropMock;
 	@Mock 
 	private PiazzaLogger loggerMock;
 	@Mock

@@ -184,14 +184,4 @@ public class IngestController {
 		}
 		return new ResponseEntity<Map<String, Object>>(stats, HttpStatus.OK);
 	}
-
-	/**
-	 * Healthcheck required for all Piazza Core Services
-	 * 
-	 * @return String
-	 */
-	@RequestMapping(value = "/", method = RequestMethod.GET)
-	public String getHealthCheck() {
-		return "Hello, Health Check here for Loader.";
-	}
 }

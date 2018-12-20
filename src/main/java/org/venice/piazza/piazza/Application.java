@@ -60,6 +60,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -115,7 +116,8 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @SpringBootApplication
 @EnableSwagger2
 @Configuration
-@EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class })
+@EnableAutoConfiguration
+//@EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class })
 @EnableAsync
 @EnableScheduling
 @EnableTransactionManagement
@@ -127,6 +129,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 		"org.venice.piazza.common.hibernate",
 })
 @ComponentScan(basePackages = { 
+		"org.venice.piazza",
 		"org.venice.piazza.access",
 		"org.venice.piazza.piazza",
 		"org.venice.piazza.gateway",
@@ -134,6 +137,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 		"org.venice.piazza.ingest",
 		"org.venice.piazza.jobmanager",
 		"org.venice.piazza.servicecontroller",
+		"org.venice.piazza.util",
 		"util",
 })
 public class Application extends SpringBootServletInitializer implements AsyncConfigurer {
@@ -171,6 +175,11 @@ public class Application extends SpringBootServletInitializer implements AsyncCo
 		builder.indentOutput(true);
 		return builder;
 	}
+	
+	@Bean
+    public HttpClient httpClient() {
+        return HttpClientBuilder.create().setMaxConnTotal(httpMaxTotal).setMaxConnPerRoute(httpMaxRoute).build();
+    }
 
 	@Bean
 	public RestTemplate restTemplate() {
