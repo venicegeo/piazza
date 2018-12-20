@@ -27,10 +27,14 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 import org.venice.piazza.piazza.Application;
+import org.venice.piazza.piazza.HttpConfiguration;
 
 public class ApplicationTests {
 	@InjectMocks
 	private Application application;
+	
+	@InjectMocks
+	private HttpConfiguration httpConfig;
 
 	@Before
 	public void setup() {
@@ -42,7 +46,7 @@ public class ApplicationTests {
 
 	@Test
 	public void testRestTemplateCreation() {
-		RestTemplate restTemplate = application.restTemplate();
+		RestTemplate restTemplate = httpConfig.restTemplate();
 		assertNotNull(restTemplate);
 	}
 
