@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -78,6 +79,7 @@ public class IngestWorker {
 	private UUIDFactory uuidFactory;
 
 	@Autowired
+	@Qualifier("UpdateJobsQueue")
 	private Queue updateJobsQueue;
 	@Autowired
 	private RabbitTemplate rabbitTemplate;

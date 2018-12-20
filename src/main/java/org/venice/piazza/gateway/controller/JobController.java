@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -89,6 +90,7 @@ public class JobController extends PiazzaRestController {
 	@Autowired
 	private RabbitTemplate rabbitTemplate;
 	@Autowired
+	@Qualifier("AbortJobsQueue")
 	private Queue abortJobsQueue;
 	@Autowired
 	private ObjectMapper mapper;
