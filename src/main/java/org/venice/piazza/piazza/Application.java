@@ -15,20 +15,10 @@
  **/
 package org.venice.piazza.piazza;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.util.Arrays;
 import java.util.concurrent.Executor;
 
-import javax.net.ssl.SSLContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,13 +28,11 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.ssl.SSLContexts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Queue;
@@ -64,11 +52,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -88,8 +74,6 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import org.venice.piazza.gateway.auth.ExtendedRequestDetails;
 import org.venice.piazza.gateway.auth.PiazzaBasicAuthenticationEntryPoint;
 import org.venice.piazza.gateway.auth.PiazzaBasicAuthenticationProvider;
-import org.venice.piazza.idam.authn.GxAuthenticator;
-import org.venice.piazza.idam.authn.PiazzaAuthenticator;
 import org.venice.piazza.jobmanager.database.JobManagerDatabaseAccessor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
@@ -117,7 +101,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @Configuration
 @EnableAutoConfiguration
-//@EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class })
 @EnableAsync
 @EnableScheduling
 @EnableTransactionManagement
@@ -141,10 +124,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 		"util",
 })
 public class Application extends SpringBootServletInitializer implements AsyncConfigurer {
-	@Value("${http.max.total}")
-	private int httpMaxTotal;
-	@Value("${http.max.route}")
-	private int httpMaxRoute;
 	@Value("${thread.count.size}")
 	private int threadCountSize;
 	@Value("${thread.count.limit}")
@@ -152,7 +131,7 @@ public class Application extends SpringBootServletInitializer implements AsyncCo
 	@Value("${SPACE}")
 	private String SPACE;
 
-	private static final Logger LOG = LoggerFactory.getLogger(JobManagerDatabaseAccessor.class);
+	private static final Logger LOG = LoggerFactory.getLogger(Application.class);
 
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
@@ -161,59 +140,6 @@ public class Application extends SpringBootServletInitializer implements AsyncCo
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args); // NOSONAR
-	}
-
-	@Bean
-	public Queue abortJobsQueue() {
-		return new Queue(String.format(JobMessageFactory.TOPIC_TEMPLATE, JobMessageFactory.ABORT_JOB_TOPIC_NAME, SPACE), true, false,
-				false);
-	}
-
-	@Bean
-	public Jackson2ObjectMapperBuilder jacksonBuilder() {
-		Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
-		builder.indentOutput(true);
-		return builder;
-	}
-	
-	@Bean
-    public HttpClient httpClient() {
-        return HttpClientBuilder.create().setMaxConnTotal(httpMaxTotal).setMaxConnPerRoute(httpMaxRoute).build();
-    }
-
-	@Bean
-	public RestTemplate restTemplate() {
-		RestTemplate restTemplate = new RestTemplate();
-		HttpClient httpClient = HttpClients.custom().setMaxConnTotal(httpMaxTotal).setMaxConnPerRoute(httpMaxRoute)
-				.setKeepAliveStrategy(new ConnectionKeepAliveStrategy() {
-					@Override
-					public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
-						HeaderElementIterator it = new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
-						while (it.hasNext()) {
-							HeaderElement headerElement = it.nextElement();
-							String param = headerElement.getName();
-							String value = headerElement.getValue();
-							if (value != null && param.equalsIgnoreCase("timeout")) {
-								return Long.parseLong(value) * 1000;
-							}
-						}
-						return (long) 5 * 1000;
-					}
-				}).setSSLHostnameVerifier(new NoopHostnameVerifier()).build();
-		restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
-		return restTemplate;
-	}
-
-	@Bean
-	public Docket gatewayApi() {
-		return new Docket(DocumentationType.SWAGGER_2).useDefaultResponseMessages(false).ignoredParameterTypes(Principal.class)
-				.groupName("Piazza").apiInfo(apiInfo()).select().apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
-				.paths(PathSelectors.any()).build();
-	}
-
-	private ApiInfo apiInfo() {
-		return new ApiInfoBuilder().title("Gateway API").description("Piazza Core Services API")
-				.contact(new Contact("The VeniceGeo Project", "http://radiantblue.com", "venice@radiantblue.com")).version("0.1.0").build();
 	}
 	
 	@Override
@@ -231,159 +157,5 @@ public class Application extends SpringBootServletInitializer implements AsyncCo
 	public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
 		return (Throwable ex, Method method, Object... params) -> LOG
 				.error("Uncaught Threading exception encountered in {} with details: {}", ex.getMessage(), method.getName());
-	}
-
-	@Bean
-	public Queue updateJobsQueue() {
-		return new Queue(String.format(JobMessageFactory.TOPIC_TEMPLATE, JobMessageFactory.UPDATE_JOB_TOPIC_NAME, SPACE), true, false,
-				false);
-	}
-
-	@Bean(name = "RequestJobQueue")
-	public Queue requestJobQueue() {
-		return new Queue(String.format(JobMessageFactory.TOPIC_TEMPLATE, JobMessageFactory.REQUEST_JOB_TOPIC_NAME, SPACE), true, false,
-				false);
-	}
-
-	@Bean
-	public LocalValidatorFactoryBean getLocalValidatorFactoryBean() {
-		return new LocalValidatorFactoryBean();
-	}
-
-	@Configuration
-	protected static class AddCorsHeaders extends WebMvcConfigurerAdapter {
-		@Override
-		public void addInterceptors(InterceptorRegistry registry) {
-			registry.addInterceptor(new HandlerInterceptorAdapter() {
-				@Override
-				public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-					response.setHeader("Access-Control-Allow-Headers", "authorization, content-type");
-					response.setHeader("Access-Control-Allow-Origin", "*");
-					response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-					response.setHeader("Access-Control-Max-Age", "36000");
-					return true;
-				}
-			});
-		}
-	}
-
-	@Configuration
-	@Profile({ "secure" })
-	protected static class ApplicationSecurity extends WebSecurityConfigurerAdapter {
-		@Autowired
-		private PiazzaBasicAuthenticationProvider basicAuthProvider;
-		@Autowired
-		private PiazzaBasicAuthenticationEntryPoint basicEntryPoint;
-
-		@Override
-		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-			auth.authenticationProvider(basicAuthProvider);
-		}
-
-		@Override
-		public void configure(WebSecurity web) throws Exception {
-			web.ignoring().antMatchers("/key").antMatchers("/version").antMatchers("/").antMatchers(HttpMethod.OPTIONS)
-					.antMatchers("/v2/key");
-		}
-
-		@Override
-		protected void configure(HttpSecurity http) throws Exception {
-			http.httpBasic().authenticationEntryPoint(basicEntryPoint).authenticationDetailsSource(authenticationDetailsSource()).and()
-					.authorizeRequests().anyRequest().authenticated().and().sessionManagement()
-					.sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().csrf().disable();
-		}
-
-		/**
-		 * Defines the Details that should be passed into the AuthenticationProvider details object.
-		 */
-		private AuthenticationDetailsSource<HttpServletRequest, ExtendedRequestDetails> authenticationDetailsSource() {
-			return new AuthenticationDetailsSource<HttpServletRequest, ExtendedRequestDetails>() {
-				@Override
-				public ExtendedRequestDetails buildDetails(HttpServletRequest request) {
-					return new ExtendedRequestDetails(request);
-				}
-			};
-		}
-	}
-	
-	@Configuration
-	@Profile({ "disable-authn" })
-	protected static class DisabledConfig {
-		@Bean
-		public PiazzaAuthenticator piazzaAuthenticator() {
-			return null;
-		}
-
-		@Bean
-		public RestTemplate restTemplate() {
-			return new RestTemplate();
-		}
-	}
-
-	@Configuration
-	@Profile({ "geoaxis" })
-	protected static class GxConfig {
-
-		@Value("${http.max.total}")
-		private int httpMaxTotal;
-
-		@Value("${http.max.route}")
-		private int httpMaxRoute;
-
-		@Value("${JKS_FILE}")
-		private String keystoreFileName;
-
-		@Value("${JKS_PASSPHRASE}")
-		private String keystorePassphrase;
-
-		@Value("${PZ_PASSPHRASE}")
-		private String piazzaKeyPassphrase;
-
-		@Bean
-		public PiazzaAuthenticator piazzaAuthenticator() {
-			return new GxAuthenticator();
-		}
-
-		@Bean
-		public RestTemplate restTemplate() throws KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException,
-				KeyStoreException, CertificateException, IOException {
-			SSLContext sslContext = SSLContexts.custom().loadKeyMaterial(getStore(), piazzaKeyPassphrase.toCharArray())
-					.loadTrustMaterial(getStore(), new TrustSelfSignedStrategy()).useProtocol("TLS").build();
-			HttpClient httpClient = HttpClientBuilder.create().setMaxConnTotal(httpMaxTotal).setSSLContext(sslContext)
-					.setMaxConnPerRoute(httpMaxRoute).setSSLHostnameVerifier(new NoopHostnameVerifier())
-					.setKeepAliveStrategy(new ConnectionKeepAliveStrategy() {
-						@Override
-						public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
-							HeaderElementIterator it = new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
-							while (it.hasNext()) {
-								HeaderElement headerElement = it.nextElement();
-								String param = headerElement.getName();
-								String value = headerElement.getValue();
-								if (value != null && param.equalsIgnoreCase("timeout")) {
-									return Long.parseLong(value) * 1000;
-								}
-							}
-							return 5L * 1000;
-						}
-					}).build();
-
-			RestTemplate restTemplate = new RestTemplate();
-			restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
-			restTemplate.setMessageConverters(Arrays.asList(new MappingJackson2HttpMessageConverter())); // Why is this
-																											// required?
-			return restTemplate;
-		}
-
-		protected KeyStore getStore() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-			final KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
-			InputStream inputStream = getClass().getClassLoader().getResourceAsStream(keystoreFileName);
-			try {
-				store.load(inputStream, keystorePassphrase.toCharArray());
-			} finally {
-				inputStream.close();
-			}
-
-			return store;
-		}
 	}
 }
