@@ -112,7 +112,7 @@ public class ServiceControllerController {
 	 *            metadata about the service
 	 * @return A Json message with the resourceId {resourceId="<the id>"}
 	 */
-	@RequestMapping(value = "/registerService", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/registerService", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> registerService(@RequestBody PiazzaJobRequest jobRequest) {
 		try {
 			RegisterServiceJob serviceJob = (RegisterServiceJob) jobRequest.jobType;
@@ -151,7 +151,7 @@ public class ServiceControllerController {
 	 *            The Id of the service.
 	 * @return The service metadata or appropriate error
 	 */
-	@RequestMapping(value = "/service/{serviceId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/service/{serviceId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> getServiceInfo(@PathVariable(value = "serviceId") String serviceId) {
 		try {
 			logger.log(String.format("Returning Metadata for Service %s", serviceId), Severity.INFORMATIONAL);
@@ -182,7 +182,7 @@ public class ServiceControllerController {
 	 * 
 	 * @return The list of registered services.
 	 */
-	@RequestMapping(value = "/service", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/service", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> getServices(
 			@RequestParam(value = "page", required = false, defaultValue = DEFAULT_PAGE) Integer page,
 			@RequestParam(value = "perPage", required = false, defaultValue = DEFAULT_PAGE_SIZE) Integer perPage,
@@ -215,7 +215,7 @@ public class ServiceControllerController {
 	 *            The Id of the service to delete.
 	 * @return Null if service is deleted without error, or error if an exception occurs..
 	 */
-	@RequestMapping(value = "/service/{serviceId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/service/{serviceId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> unregisterService(@PathVariable(value = "serviceId") String serviceId,
 			@RequestParam(value = "softDelete", required = false) boolean softDelete) {
 		try {
@@ -251,7 +251,7 @@ public class ServiceControllerController {
 	 *            The data of the service to update.
 	 * @return Null if the service has been updated, or an appropriate error if there is one.
 	 */
-	@RequestMapping(value = "/service/{serviceId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/service/{serviceId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> updateServiceMetadata(@PathVariable(value = "serviceId") String serviceId,
 			@RequestBody Service serviceData) {
 		try {
@@ -323,7 +323,7 @@ public class ServiceControllerController {
 	 * 
 	 * @return the results of the service execution
 	 */
-	@RequestMapping(value = "/executeService", method = RequestMethod.POST, headers = "Accept=application/json")
+	//@RequestMapping(value = "/executeService", method = RequestMethod.POST, headers = "Accept=application/json")
 	public ResponseEntity<String> executeService(@RequestBody ExecuteServiceData data) {
 		for (Map.Entry<String, DataType> entry : data.getDataInputs().entrySet()) {
 			String key = entry.getKey();
@@ -355,7 +355,7 @@ public class ServiceControllerController {
 	 *            The id associated with the service that is registered within the Service Controller.
 	 * @return Json with the ResourceMetadata, the metadata about the service
 	 */
-	@RequestMapping(value = "/describeService", method = RequestMethod.GET, headers = "Accept=application/json")
+	//@RequestMapping(value = "/describeService", method = RequestMethod.GET, headers = "Accept=application/json")
 	public ResponseEntity<String> describeService(@ModelAttribute("resourceId") String resourceId) {
 		ResponseEntity<String> result = dsHandler.handle(resourceId);
 		logger.log(RESULT_IS + result, Severity.DEBUG);
@@ -372,7 +372,7 @@ public class ServiceControllerController {
 	 * @param resourceId
 	 * @return the result of the deletion
 	 */
-	@RequestMapping(value = "/deleteService", method = RequestMethod.GET, headers = "Accept=application/json")
+	//@RequestMapping(value = "/deleteService", method = RequestMethod.GET, headers = "Accept=application/json")
 	public ResponseEntity<String> deleteService(@ModelAttribute("resourceId") String resourceId) {
 		logger.log("deleteService resourceId=" + resourceId, Severity.INFORMATIONAL);
 		String result = dlHandler.handle(resourceId, false);
@@ -388,7 +388,7 @@ public class ServiceControllerController {
 	 * 
 	 * @return Json list o resourceMetadata items (Metadata about the service)
 	 */
-	@RequestMapping(value = "/listService", method = RequestMethod.GET, headers = "Accept=application/json")
+	//@RequestMapping(value = "/listService", method = RequestMethod.GET, headers = "Accept=application/json")
 	public ResponseEntity<String> listService() {
 		logger.log("listService", Severity.INFORMATIONAL);
 		ResponseEntity<String> result = lsHandler.handle();
@@ -402,7 +402,7 @@ public class ServiceControllerController {
 	 * 
 	 * @return json as statistics
 	 */
-	@RequestMapping(value = "/admin/stats", method = RequestMethod.GET)
+	@RequestMapping(value = "/servicecontroller/admin/stats", method = RequestMethod.GET)
 	public void stats(HttpServletResponse response) throws IOException {
 		response.sendRedirect("/metrics");
 	}

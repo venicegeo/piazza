@@ -82,7 +82,7 @@ public class IngestController {
 	 *            Id of the Resource
 	 * @return The resource matching the specified Id
 	 */
-	@RequestMapping(value = "/data/{dataId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/data/{dataId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> deleteData(@PathVariable(value = "dataId") String dataId) {
 		try {
 			if (dataId.isEmpty()) {
@@ -141,7 +141,7 @@ public class IngestController {
 	 *            the user submitting the request
 	 * @return OK if successful; error if not.
 	 */
-	@RequestMapping(value = "/data/{dataId}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/data/{dataId}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> updateMetadata(@PathVariable(value = "dataId") String dataId,
 			@RequestBody ResourceMetadata metadata) {
 		try {
@@ -173,7 +173,7 @@ public class IngestController {
 	 * 
 	 * @return Component information
 	 */
-	@RequestMapping(value = "/admin/stats", method = RequestMethod.GET)
+	@RequestMapping(value = "/ingest/admin/stats", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, Object>> getAdminStats() {
 		Map<String, Object> stats = new HashMap<String, Object>();
 		// Return information on the jobs currently being processed

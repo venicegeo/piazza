@@ -375,23 +375,6 @@ public class ServiceControllerTest {
         assertEquals("The response should be 200", result.getStatusCode(), responseEntity.getStatusCode());
 	}
 
-	@Test
-	/**
-	 * test health check
-	 */
-	@Ignore
-	public void testHealthCheck() {
-		String htmlMessage = "<HTML><TITLE>Piazza Service Controller Welcome</TITLE>";
-		htmlMessage = htmlMessage + "<BODY><BR> Welcome from the Piazza Service Controller. "
-				+ "<BR>For details on running and using the ServiceController, "
-				+ "<BR>see The Piazza Developer's Guide<A> for details."
-				+ "<BODY></HTML>";
-		
-		ResponseEntity<String> result = sc.healthCheck();
-        assertEquals("The response should be 200", HttpStatus.OK, result.getStatusCode());
-        assertTrue("The response contains the appropriate message", result.getBody().contains(htmlMessage));
-	}
-
 	/**
 	 * Return a list of generic services for testing.  
 	 * Each service has a unique serviceId

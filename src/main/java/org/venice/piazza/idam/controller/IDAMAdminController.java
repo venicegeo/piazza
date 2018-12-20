@@ -55,7 +55,7 @@ public class IDAMAdminController {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(IDAMAdminController.class);
 
-	@RequestMapping(value = "/admin/stats", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/idam/admin/stats", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public String getAdminStats() {
 		return "{ \"profiles\":\"" + String.join(",", env.getActiveProfiles()) + "\" }";
 	}
@@ -65,7 +65,7 @@ public class IDAMAdminController {
 	 * 
 	 * @return User Throttles
 	 */
-	@RequestMapping(value = "/admin/throttles", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/idam/admin/throttles", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<UserThrottles> getAllUserThrottles() {
 		return accessor.getAllUserThrottles();
 	}

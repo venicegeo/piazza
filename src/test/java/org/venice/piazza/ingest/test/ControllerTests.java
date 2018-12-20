@@ -122,7 +122,7 @@ public class ControllerTests {
 	}
 
 	/**
-	 * Test GET /admin/stats
+	 * Test GET stats
 	 */
 	@Test
 	public void testAdminStats() {
@@ -133,16 +133,5 @@ public class ControllerTests {
 		// Verify
 		assertTrue(entity.getStatusCode().equals(HttpStatus.OK));
 		assertTrue(map.keySet().contains("jobs"));
-	}
-
-	/**
-	 * Test GET /
-	 */
-	@Test
-	public void testHealthCheck() {
-		// Test
-		String response = ingestController.getHealthCheck();
-		// Verify
-		assertTrue(response.contains("Health"));
 	}
 }

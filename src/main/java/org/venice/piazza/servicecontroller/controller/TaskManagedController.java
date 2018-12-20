@@ -66,7 +66,7 @@ public class TaskManagedController {
      * @param serviceId The ID of the Service
      * @return The information for the next Job, if one is present.
      */
-    @RequestMapping(value = {"/service/{serviceId}/task"}, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    //@RequestMapping(value = {"/service/{serviceId}/task"}, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PiazzaResponse> getNextServiceJobFromQueue(@RequestParam(value = "userName", required = true) String userName,
                                                                      @PathVariable(value = "serviceId") String serviceId) {
         try {
@@ -117,8 +117,8 @@ public class TaskManagedController {
      * @param statusUpdate The update contents, including status, percentage, and possibly results.
      * @return Success or error.
      */
-    @RequestMapping(value = {
-            "/service/{serviceId}/task/{jobId}"}, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+//    @RequestMapping(value = {
+//            "/service/{serviceId}/task/{jobId}"}, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PiazzaResponse> updateServiceJobStatus(@RequestParam(value = "userName", required = true) String userName,
                                                                  @PathVariable(value = "serviceId") String serviceId, @PathVariable(value = "jobId") String jobId,
                                                                  @RequestBody StatusUpdate statusUpdate) {
@@ -168,8 +168,8 @@ public class TaskManagedController {
      * @param serviceId The ID of the Service
      * @return Map containing information regarding the Task-Managed Service
      */
-    @RequestMapping(value = {
-            "/service/{serviceId}/task/metadata"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+//    @RequestMapping(value = {
+//            "/service/{serviceId}/task/metadata"}, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getServiceQueueData(@RequestParam(value = "userName", required = true) String userName,
                                               @PathVariable(value = "serviceId") String serviceId) {
         try {

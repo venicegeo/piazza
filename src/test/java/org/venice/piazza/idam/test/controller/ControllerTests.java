@@ -95,15 +95,6 @@ public class ControllerTests {
         MockitoAnnotations.initMocks(this);
     }
 
-    /**
-     * Tests root endpoint
-     */
-    @Test
-    public void testGetHealthCheck() {
-        String result = adminController.getHealthCheck();
-        assertTrue(result.contains("Hello"));
-    }
-
     @Test
     public void testGetAdminStats() {
         when(env.getActiveProfiles()).thenReturn(new String[]{"geoaxis"});

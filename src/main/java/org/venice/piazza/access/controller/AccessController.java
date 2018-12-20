@@ -122,7 +122,7 @@ public class AccessController {
 	 *            The Id of the Data Item to get. Assumes this file is ready to be downloaded.
 	 */
 	@SuppressWarnings("rawtypes")
-	@RequestMapping(value = "/file/{dataId}", method = RequestMethod.GET)
+	//@RequestMapping(value = "/file/{dataId}", method = RequestMethod.GET)
 	public ResponseEntity accessFile(@PathVariable(value = "dataId") String dataId,
 			@RequestParam(value = "fileName", required = false) String name) {
 
@@ -192,7 +192,7 @@ public class AccessController {
 	 *            Id of the Resource
 	 * @return The resource matching the specified Id
 	 */
-	@RequestMapping(value = "/data/{dataId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/data/{dataId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> getData(@PathVariable(value = "dataId") String dataId) {
 		try {
 			if (dataId.isEmpty()) {
@@ -227,7 +227,7 @@ public class AccessController {
 	 *            The Id of the deployment to fetch
 	 * @return The deployment information, or an ErrorResponse if exceptions occur
 	 */
-	@RequestMapping(value = "/deployment/{deploymentId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/deployment/{deploymentId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> getDeployment(@PathVariable(value = "deploymentId") String deploymentId) {
 		try {
 			if (deploymentId.isEmpty()) {
@@ -266,7 +266,7 @@ public class AccessController {
 	 * 
 	 * @return The list of all data held by the system.
 	 */
-	@RequestMapping(value = "/data", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/data", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> getAllData(@RequestParam(value = "createdByJobId", required = false) String createdByJobId,
 			@RequestParam(value = "page", required = false, defaultValue = DEFAULT_PAGE) Integer page,
 			@RequestParam(value = "perPage", required = false, defaultValue = DEFAULT_PAGE_SIZE) Integer pageSize,
@@ -297,7 +297,7 @@ public class AccessController {
 	 * 
 	 * @return The list of all data held by the system.
 	 */
-	@RequestMapping(value = "/deployment", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/deployment", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> getAllDeployments(
 			@RequestParam(value = "page", required = false, defaultValue = DEFAULT_PAGE) Integer page,
 			@RequestParam(value = "perPage", required = false, defaultValue = DEFAULT_PAGE_SIZE) Integer perPage,
@@ -326,7 +326,7 @@ public class AccessController {
 	 * 
 	 * @return Number of Data items in the system.
 	 */
-	@RequestMapping(value = "/data/count", method = RequestMethod.GET)
+	//@RequestMapping(value = "/data/count", method = RequestMethod.GET)
 	public long getDataCount() {
 		return accessor.getDataCount();
 	}
@@ -339,7 +339,7 @@ public class AccessController {
 	 *            The Data ID to delete all deployments for.
 	 * @return Response indicating true or false success of the deletion.
 	 */
-	@RequestMapping(value = "/deployment", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/deployment", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> deleteDeploymentByData(@RequestParam(value = "dataId", required = true) String dataId) {
 		try {
 			pzLogger.log(String.format("Deleting Data for Data ID %s", dataId), Severity.INFORMATIONAL);
@@ -371,7 +371,7 @@ public class AccessController {
 	 *            The Id of the deployment to delete.
 	 * @return OK confirmation if deleted, or an ErrorResponse if exceptions occur
 	 */
-	@RequestMapping(value = "/deployment/{deploymentId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/deployment/{deploymentId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> deleteDeployment(@PathVariable(value = "deploymentId") String deploymentId) {
 		try {
 			// Query for the Deployment Id
@@ -410,7 +410,7 @@ public class AccessController {
 	 *            The user who requests the creation
 	 * @return The Deployment Group Response
 	 */
-	@RequestMapping(value = "/deployment/group", method = RequestMethod.POST, produces = "application/json")
+	//@RequestMapping(value = "/deployment/group", method = RequestMethod.POST, produces = "application/json")
 	public ResponseEntity<PiazzaResponse> createDeploymentGroup(@RequestParam(value = "createdBy", required = true) String createdBy) {
 		try {
 			// Create a new Deployment Group
@@ -431,7 +431,7 @@ public class AccessController {
 	 *            The Id of the deployment Group to delete.
 	 * @return Appropriate response
 	 */
-	@RequestMapping(value = "/deployment/group/{deploymentGroupId}", method = RequestMethod.DELETE, produces = "application/json")
+	//@RequestMapping(value = "/deployment/group/{deploymentGroupId}", method = RequestMethod.DELETE, produces = "application/json")
 	public ResponseEntity<PiazzaResponse> deleteDeploymentGroup(@PathVariable(value = "deploymentGroupId") String deploymentGroupId) {
 		try {
 			if ((deploymentGroupId == null) || (deploymentGroupId.isEmpty())) {
@@ -467,7 +467,7 @@ public class AccessController {
 	 * Forces a check of all expired leases for reaping. Reaping will normally occur automatically every night. However,
 	 * this endpoint provides a way to trigger at will.
 	 */
-	@RequestMapping(value = "/reap", method = RequestMethod.GET)
+	//@RequestMapping(value = "/reap", method = RequestMethod.GET)
 	public void forceReap() {
 		leaser.reapExpiredLeases();
 	}
@@ -477,7 +477,7 @@ public class AccessController {
 	 * 
 	 * @return Component information
 	 */
-	@RequestMapping(value = "/admin/stats", method = RequestMethod.GET)
+	//@RequestMapping(value = "/access/admin/stats", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, Object>> getAdminStats() {
 		Map<String, Object> stats = new HashMap<>();
 		// Return information on the jobs currently being processed

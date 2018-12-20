@@ -93,7 +93,7 @@ public class JobManagerController {
 	 *         not ready, the available Status and Progress of the Job will be included in this response object. If the
 	 *         job is ready, then this Response will contain an Object reference to the output produced by the Job.
 	 */
-	@RequestMapping(value = "/job/{jobId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/job/{jobId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> getJobStatus(@PathVariable(value = "jobId") String jobId) {
 		try {
 			if (jobId.isEmpty()) {
@@ -131,7 +131,7 @@ public class JobManagerController {
 	 *            specified, then one will be randomly generated.
 	 * @return The Response, containing the Job Id, or an Error
 	 */
-	@RequestMapping(value = "/requestJob", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/requestJob", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> requestJob(@RequestBody PiazzaJobRequest request,
 			@RequestParam(value = "jobId", required = false) String jobId) {
 
@@ -159,7 +159,7 @@ public class JobManagerController {
 	 *            The request, detailing the AbortJob type and the user who has requested this action.
 	 * @return null response if successful. ErrorResponse containing appropriate error details on exception.
 	 */
-	@RequestMapping(value = "/abort", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/abort", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> abortJob(@RequestBody PiazzaJobRequest request) {
 		try {
 			// Verify the Job exists
@@ -202,7 +202,7 @@ public class JobManagerController {
 	 * @return The response containing the Job Id if successful. Appropriate error details returned on exception.
 	 * 
 	 */
-	@RequestMapping(value = "/repeat", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	//@RequestMapping(value = "/repeat", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<PiazzaResponse> repeatJob(@RequestBody PiazzaJobRequest request) {
 		try {
 			// Verify the Job exists
@@ -247,7 +247,7 @@ public class JobManagerController {
 	 *            The number of results per page
 	 * @return The List of all Jobs in the system.
 	 */
-	@RequestMapping(value = "/job", method = RequestMethod.GET)
+	//@RequestMapping(value = "/job", method = RequestMethod.GET)
 	public JobListResponse getJobs(@RequestParam(value = "page", required = false, defaultValue = DEFAULT_PAGE) String page,
 			@RequestParam(value = "perPage", required = false, defaultValue = DEFAULT_PAGE_SIZE) String pageSize,
 			@RequestParam(value = "order", required = false, defaultValue = "asc") String order,
@@ -277,7 +277,7 @@ public class JobManagerController {
 	 * 
 	 * @return Number of Jobs in the system.
 	 */
-	@RequestMapping(value = "/job/count", method = RequestMethod.GET)
+	//@RequestMapping(value = "/job/count", method = RequestMethod.GET)
 	public long getJobCount() {
 		return accessor.getJobsCount();
 	}
@@ -290,7 +290,7 @@ public class JobManagerController {
 	 * 
 	 * @return List of Job Status types that can be queried for in the system.
 	 */
-	@RequestMapping(value = "/job/status", method = RequestMethod.GET)
+	//@RequestMapping(value = "/job/status", method = RequestMethod.GET)
 	public List<String> getStatuses() {
 		List<String> statuses = new ArrayList<>();
 		statuses.add(StatusUpdate.STATUS_CANCELLED);
@@ -312,7 +312,7 @@ public class JobManagerController {
 	 * 
 	 * @return List of Jobs that match the specified status.
 	 */
-	@RequestMapping(value = "/job/status/{status}/count", method = RequestMethod.GET)
+	//@RequestMapping(value = "/job/status/{status}/count", method = RequestMethod.GET)
 	public Long getStatusCount(@PathVariable(value = "status") String status) {
 		return accessor.getJobStatusCount(status);
 	}
@@ -322,7 +322,7 @@ public class JobManagerController {
 	 * 
 	 * @return Component information
 	 */
-	@RequestMapping(value = "/admin/stats", method = RequestMethod.GET)
+	//@RequestMapping(value = "/jobmanager/admin/stats", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, Object>> getAdminStats() {
 		Map<String, Object> stats = new HashMap<>();
 		// Add information related to the Jobs in the system

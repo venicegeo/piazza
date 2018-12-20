@@ -106,14 +106,6 @@ public class JobControllerTests {
     }
 
     /**
-     * Test / root endpoint
-     */
-    @Test
-    public void testHealthCheck() {
-        assertTrue(jobController.getHealthCheck().contains("Health Check"));
-    }
-
-    /**
      * Test /job/{jobId}
      */
     @Test

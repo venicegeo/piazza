@@ -134,14 +134,6 @@ public class ControllerTests {
 		mockDataStore.addFeatures(features);
 	}
 
-	/**
-	 * Tests the health check
-	 */
-	@Test
-	public void testHealthCheck() {
-		String response = accessController.getHealthCheck();
-		assertTrue(response.contains("Health Check"));
-	}
 
 	/**
 	 * Test an exception
@@ -330,7 +322,7 @@ public class ControllerTests {
 	}
 
 	/**
-	 * Test GET /admin/stats
+	 * Test GET stats
 	 */
 	@Test
 	public void testAdminStats() {
