@@ -51,7 +51,7 @@ public class ApplicationTests {
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
 
-		ReflectionTestUtils.setField(application, "SPACE", "unitTest");
+		ReflectionTestUtils.setField(amqpConfig, "SPACE", "unitTest");
 	}
 
 	@Test
