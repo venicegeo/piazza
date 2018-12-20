@@ -18,7 +18,6 @@ package org.venice.piazza.gateway.test;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.security.Principal;

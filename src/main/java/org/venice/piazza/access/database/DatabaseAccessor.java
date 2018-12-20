@@ -16,8 +16,6 @@
 package org.venice.piazza.access.database;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +23,6 @@ import org.apache.commons.lang.StringUtils;
 import org.geotools.data.DataStore;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import org.venice.piazza.common.hibernate.dao.DeploymentGroupDao;
